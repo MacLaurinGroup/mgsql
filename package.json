@@ -1,0 +1,25 @@
+{
+  "name": "mgsql",
+  "version": "0.0.1",
+  "description": "SQL Utility",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MacLaurinGroup/mgsql.git"
+  },
+  "author": "MacLaurin Group LLC",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MacLaurinGroup/mgsql/issues"
+  },
+  "homepage": "https://github.com/MacLaurinGroup/mgsql#readme",
+  "dependencies": {
+    "underscore": "^1.10.2"
+  },
+  "devDependencies": {
+    "pg": "^8.2.1"
+  }
+}
