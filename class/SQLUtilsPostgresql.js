@@ -7,8 +7,6 @@
 const _ = require('underscore');
 
 module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
-
-
   /**
    * Specific override to let us alias up the columns
    * @param {*} dbConn
