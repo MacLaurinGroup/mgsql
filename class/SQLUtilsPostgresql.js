@@ -7,6 +7,46 @@
 const _ = require('underscore');
 
 module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
+
+
+  /**
+   * Specific override to let us alias up the columns
+   * @param {*} dbConn
+   * @param {*} sql
+   * @param {*} params
+   */
+  async query (dbConn, sql, params) {
+    this.lastStmt = {
+      sql: sql,
+      vals: params
+    };
+
+    if (this.logStat) {
+      console.log(this.lastStmt);
+    }
+
+    let qResult = await dbConn.query({
+      text: this.lastStmt.sql,
+      values: this.lastStmt.vals,
+      rowMode: 'array'
+    });
+
+    if (qResult.command && qResult.command === 'SELECT') {
+      qResult = await this._remapRowsWithAlias(dbConn, qResult);
+    }
+
+    // clean up unused fields
+    delete qResult._parsers;
+    delete qResult._types;
+    delete qResult.parseRow;
+    delete qResult.oid;
+    delete qResult.RowCtor;
+    delete qResult.rowAsArray;
+    delete qResult.command;
+
+    return qResult;
+  }
+
   /**
    * Builds the UPDATE statement
    * @param {*} tableDef
@@ -65,7 +105,10 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
       stmt.vals.push(tableData[col]);
     }
 
-    stmt.sql = `INSERT INTO ${table} (${sqlCols.join(',')}) VALUES (${sqlVals.join(',')}) RETURNING *`;
+    stmt.sql = `INSERT INTO ${table} (${sqlCols.join(',')}) VALUES (${sqlVals.join(',')})`;
+    if (tableDef.keys.length > 0) {
+      stmt.sql += ` RETURNING ${tableDef.keys.join(',')}`;
+    }
     return stmt;
   }
 
@@ -74,12 +117,8 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
    *
    * @param {*} qResult
    */
-  __parseSelectReturn (qResult) {
-    if (_.has(qResult, 'rows')) {
-      return qResult.rows;
-    } else {
-      return [];
-    }
+  async __parseSelectReturn (dbConn, qResult) {
+    return _.has(qResult, 'rows') ? qResult.rows : [];
   }
 
   /**
@@ -89,11 +128,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
    * @param {*} qResult
    */
   __parseUpdateReturn (tableDef, qResult) {
-    if (_.has(qResult, 'rowCount')) {
-      return qResult.rowCount;
-    } else {
-      return qResult;
-    }
+    return _.has(qResult, 'rowCount') ? qResult.rowCount : qResult;
   }
 
   /**
@@ -104,11 +139,14 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
   __parseInsertReturn (tableDef, qResult) {
     if (!_.has(qResult, 'rows') || qResult.rows.length === 0) {
       return qResult;
-    } else if (tableDef.keys.length > 0 && _.has(qResult.rows[0], tableDef.keys[0])) {
-      return qResult.rows[0][tableDef.keys[0]];
-    } else {
-      return qResult;
+    } else if (tableDef.keys.length > 0) {
+      for (let c = 0; c < qResult.fields.length; c++) {
+        if (qResult.fields[c].name === tableDef.keys[0]) {
+          return qResult.rows[0][c];
+        }
+      }
     }
+    return qResult;
   }
 
   /**
@@ -199,7 +237,85 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
       return pgDataType;
     }
   }
+
+  /**
+   * Run around the rows in the query, rewriting them with the alias
+   * @param {*} dbConn
+   * @param {*} qResult
+   */
+  async _remapRowsWithAlias (dbConn, qResult) {
+    // Grab all the tableId's
+    const tableOwner = dbConn.connectionParameters.user;
+    const tableIdMap = {};
+
+    for (const field of qResult.fields) {
+      if (field.tableID > 0 && !_.has(tableIdMap, field.tableID)) {
+        tableIdMap[field.tableID] = await this._loadTableFromOid(dbConn, tableOwner, field.tableID);
+      }
+    }
+
+    // Make sure we have some tables to alias up
+    if (Object.keys(tableIdMap).length === 0) {
+      return qResult;
+    }
+
+    // Determine the fieldnames
+    const fieldNames = [];
+    for (const field of qResult.fields) {
+      if (field.tableID > 0) {
+        const tableName = tableIdMap[field.tableID];
+        if (tableName != null) {
+          fieldNames.push(tableName + '.' + field.name);
+        } else {
+          fieldNames.push(field.name);
+        }
+      } else {
+        fieldNames.push(field.name);
+      }
+    }
+
+    // Run around the rows creating the alias
+    const rows = [];
+    for (const row of qResult.rows) {
+      const nRow = {};
+      for (let c = 0; c < row.length; c++) {
+        nRow[fieldNames[c]] = row[c];
+      }
+      rows.push(nRow);
+    }
+
+    qResult.rows = rows;
+    delete qResult.fields;
+    return qResult;
+  }
+
+  async _loadTableFromOid (dbConn, tableOwner, tableID) {
+    if (this.dbDefinition.hasTableName(tableOwner, tableID)) {
+      return this.dbDefinition.getTableName(tableOwner, tableID);
+    }
+
+    const qResult = await dbConn.query(SQL_TABLEID, [tableOwner, tableID]);
+    if (qResult.rows.length === 1) {
+      this.dbDefinition.setTableName(tableOwner, tableID, qResult.rows[0].tablename);
+      return qResult.rows[0].tablename;
+    } else {
+      this.dbDefinition.setTableName(tableOwner, tableID, null);
+      return null;
+    }
+  }
 };
+
+const SQL_TABLEID = `
+select 
+  tablename
+from 
+  pg_tables as pt, 
+  pg_class as pc 
+where 
+  pc.relname=pt.tablename 
+  and tableowner=$1
+  and oid=$2
+`;
 
 const SQL_ENUM = `
 select 

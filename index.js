@@ -1,4 +1,3 @@
-
 const dbSession = require('./class/Session');
 const clean = new (require('./class/clean'))();
 const check = new (require('./class/check'))();

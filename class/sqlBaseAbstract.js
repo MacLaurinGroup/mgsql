@@ -20,7 +20,13 @@ module.exports = class sqlBaseAbstract {
 
   // ---------------------------------------------------------
 
-  async query (dbConn, sql, params) {
+  /**
+   * Runs the query but does not translation
+   * @param {*} dbConn
+   * @param {*} sql
+   * @param {*} params
+   */
+  async queryRaw (dbConn, sql, params) {
     this.lastStmt = {
       sql: sql,
       vals: params
@@ -34,12 +40,18 @@ module.exports = class sqlBaseAbstract {
     return qResult;
   }
 
-  async queryStmt (dbConn) {
-    if (this.logStat) {
-      console.log(this.lastStmt);
-    }
+  async query (dbConn, sql, params) {
+    this.lastStmt = {
+      sql: sql,
+      vals: params
+    };
 
     const qResult = await dbConn.query(this.lastStmt.sql, this.lastStmt.vals);
+    return qResult;
+  }
+
+  async queryStmt (dbConn) {
+    const qResult = await this.query(dbConn, this.lastStmt.sql, this.lastStmt.vals);
     return qResult;
   }
 
@@ -58,12 +70,9 @@ module.exports = class sqlBaseAbstract {
       vals: params
     };
 
-    if (this.logStat) {
-      console.log(this.lastStmt);
-    }
-
-    const qResult = await dbConn.query(this.lastStmt.sql, this.lastStmt.vals);
-    return this.__parseSelectReturn(qResult);
+    const qResult = await this.query(dbConn, this.lastStmt.sql, this.lastStmt.vals);
+    const qAlias = await this.__parseSelectReturn(dbConn, qResult);
+    return qAlias;
   }
 
   /**
@@ -74,18 +83,8 @@ module.exports = class sqlBaseAbstract {
    * @param {*} params
    */
   async select1 (dbConn, sql, params) {
-    this.lastStmt = {
-      sql: sql,
-      vals: params
-    };
-
-    if (this.logStat) {
-      console.log(this.lastStmt);
-    }
-
-    const qResult = await dbConn.query(this.lastStmt.sql, this.lastStmt.vals);
-    const results = this.__parseSelectReturn(qResult);
-    return (results.length > 0) ? results[0] : null;
+    const qAlias = await this.select(dbConn, sql, params);
+    return (qAlias.length > 0) ? qAlias[0] : null;
   }
 
   // ---------------------------------------------------------
@@ -135,7 +134,7 @@ module.exports = class sqlBaseAbstract {
     return qResult;
   }
 
-  __parseSelectReturn (qResult) {
+  async __parseSelectReturn (dbConn, qResult) {
     return qResult;
   }
 
@@ -223,6 +222,9 @@ module.exports = class sqlBaseAbstract {
         } else {
           data[colName] = tableData[col];
         }
+      } else {
+        // default handling, just set the field
+        data[colName] = tableData[col];
       }
     }
 
