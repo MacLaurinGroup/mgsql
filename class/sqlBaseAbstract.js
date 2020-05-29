@@ -19,6 +19,10 @@ module.exports = class sqlBaseAbstract {
     return this;
   }
 
+  async end () {
+    await this.dbConn.end();
+  }
+
   // ---------------------------------------------------------
 
   /**
