@@ -9,11 +9,10 @@ const _ = require('underscore');
 module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
   /**
    * Specific override to let us alias up the columns
-   * @param {*} dbConn
    * @param {*} sql
    * @param {*} params
    */
-  async query (dbConn, sql, params) {
+  async query (sql, params) {
     this.lastStmt = {
       sql: sql,
       vals: params
@@ -23,14 +22,14 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
       console.log(this.lastStmt);
     }
 
-    let qResult = await dbConn.query({
+    let qResult = await this.dbConn.query({
       text: this.lastStmt.sql,
       values: this.lastStmt.vals,
       rowMode: 'array'
     });
 
     if (qResult.command && qResult.command === 'SELECT') {
-      qResult = await this._remapRowsWithAlias(dbConn, qResult);
+      qResult = await this._remapRowsWithAlias(qResult);
     }
 
     // clean up unused fields
@@ -115,7 +114,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
    *
    * @param {*} qResult
    */
-  async __parseSelectReturn (dbConn, qResult) {
+  async __parseSelectReturn (qResult) {
     return _.has(qResult, 'rows') ? qResult.rows : [];
   }
 
@@ -153,7 +152,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
    * @param {*} dbConn
    * @param {*} table
    */
-  async __getTableMetadata (dbConn, table) {
+  async __getTableMetadata (table) {
     if (this.dbDefinition.hasTable(table)) {
       return this.dbDefinition.getTable(table);
     }
@@ -170,9 +169,9 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
     if (tableParts.length === 2) {
       schema = tableParts[0];
       table = tableParts[1];
-      qResult = await dbConn.query('SELECT * FROM information_schema.COLUMNS WHERE table_name=$1 and table_schema=$2', [table, schema]);
+      qResult = await this.dbConn.query('SELECT * FROM information_schema.COLUMNS WHERE table_name=$1 and table_schema=$2', [table, schema]);
     } else {
-      qResult = await dbConn.query('SELECT * FROM information_schema.COLUMNS WHERE table_name=$1', [table]);
+      qResult = await this.dbConn.query('SELECT * FROM information_schema.COLUMNS WHERE table_name=$1', [table]);
     }
 
     for (const row of qResult.rows) {
@@ -198,13 +197,13 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
       desc.columns[row.column_name] = field;
     }
 
-    await this._readKeys(dbConn, schema, table, desc);
+    await this._readKeys(schema, table, desc);
 
     return desc;
   }
 
-  async _readEnums (dbConn, schema, name) {
-    const qRes = await dbConn.query(SQL_ENUM, [schema, name]);
+  async _readEnums (schema, name) {
+    const qRes = await this.dbConn.query(SQL_ENUM, [schema, name]);
     const vals = [];
 
     for (const row of qRes.rows) {
@@ -214,8 +213,8 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
     return vals;
   }
 
-  async _readKeys (dbConn, schema, name, desc) {
-    const qRes = await dbConn.query(SQL_PK, [schema + '.' + name]);
+  async _readKeys (schema, name, desc) {
+    const qRes = await this.dbConn.query(SQL_PK, [schema + '.' + name]);
     for (const row of qRes.rows) {
       desc.keys.push(row.attname);
       desc.columns[row.attname].keyType = this._getDataType(row.data_type);
@@ -241,14 +240,14 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
    * @param {*} dbConn
    * @param {*} qResult
    */
-  async _remapRowsWithAlias (dbConn, qResult) {
+  async _remapRowsWithAlias (qResult) {
     // Grab all the tableId's
-    const tableOwner = dbConn.connectionParameters.user;
+    const tableOwner = this.dbConn.connectionParameters.user;
     const tableIdMap = {};
 
     for (const field of qResult.fields) {
       if (field.tableID > 0 && !_.has(tableIdMap, field.tableID)) {
-        tableIdMap[field.tableID] = await this._loadTableFromOid(dbConn, tableOwner, field.tableID);
+        tableIdMap[field.tableID] = await this._loadTableFromOid(tableOwner, field.tableID);
       }
     }
 
@@ -287,12 +286,12 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
     return qResult;
   }
 
-  async _loadTableFromOid (dbConn, tableOwner, tableID) {
+  async _loadTableFromOid (tableOwner, tableID) {
     if (this.dbDefinition.hasTableName(tableOwner, tableID)) {
       return this.dbDefinition.getTableName(tableOwner, tableID);
     }
 
-    const qResult = await dbConn.query(SQL_TABLEID, [tableOwner, tableID]);
+    const qResult = await this.dbConn.query(SQL_TABLEID, [tableOwner, tableID]);
     if (qResult.rows.length === 1) {
       this.dbDefinition.setTableName(tableOwner, tableID, qResult.rows[0].tablename);
       return qResult.rows[0].tablename;

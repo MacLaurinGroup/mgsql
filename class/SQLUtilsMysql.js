@@ -10,13 +10,13 @@ module.exports = class SQLUtilsMysql extends require('./sqlBaseAbstract') {
    * @param {*} dbConn
    * @param {*} table
    */
-  async __getTableMetadata (dbConn, table) {
+  async __getTableMetadata (table) {
     if (this.dbDefinition.hasTable(table)) {
       return this.dbDefinition.getTable(table);
     }
 
     try {
-      const rows = await dbConn.query('desc `' + table + '`');
+      const rows = await this.dbConn.query('desc `' + table + '`');
       const desc = {
         keys: [],
         columns: {}

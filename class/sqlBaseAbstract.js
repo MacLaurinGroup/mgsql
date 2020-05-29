@@ -7,8 +7,9 @@
 const _ = require('underscore');
 
 module.exports = class sqlBaseAbstract {
-  constructor (dbDefinition) {
+  constructor (dbDefinition, dbConn) {
     this.dbDefinition = dbDefinition;
+    this.dbConn = dbConn;
     this.lastStmt = null;
     this.logStat = false;
   }
@@ -22,11 +23,10 @@ module.exports = class sqlBaseAbstract {
 
   /**
    * Runs the query but does not translation
-   * @param {*} dbConn
    * @param {*} sql
    * @param {*} params
    */
-  async queryRaw (dbConn, sql, params) {
+  async queryRaw (sql, params) {
     this.lastStmt = {
       sql: sql,
       vals: params
@@ -36,22 +36,22 @@ module.exports = class sqlBaseAbstract {
       console.log(this.lastStmt);
     }
 
-    const qResult = await dbConn.query(this.lastStmt.sql, this.lastStmt.vals);
+    const qResult = await this.dbConn.query(this.lastStmt.sql, this.lastStmt.vals);
     return qResult;
   }
 
-  async query (dbConn, sql, params) {
+  async query (sql, params) {
     this.lastStmt = {
       sql: sql,
       vals: params
     };
 
-    const qResult = await dbConn.query(this.lastStmt.sql, this.lastStmt.vals);
+    const qResult = await this.dbConn.query(this.lastStmt.sql, this.lastStmt.vals);
     return qResult;
   }
 
-  async queryStmt (dbConn) {
-    const qResult = await this.query(dbConn, this.lastStmt.sql, this.lastStmt.vals);
+  async queryStmt () {
+    const qResult = await this.query(this.lastStmt.sql, this.lastStmt.vals);
     return qResult;
   }
 
@@ -60,37 +60,35 @@ module.exports = class sqlBaseAbstract {
   /**
    * Return back the rows
    *
-   * @param {*} dbConn
    * @param {*} sql
    * @param {*} params
    */
-  async select (dbConn, sql, params) {
+  async select (sql, params) {
     this.lastStmt = {
       sql: sql,
       vals: params
     };
 
-    const qResult = await this.query(dbConn, this.lastStmt.sql, this.lastStmt.vals);
-    const qAlias = await this.__parseSelectReturn(dbConn, qResult);
+    const qResult = await this.query(this.lastStmt.sql, this.lastStmt.vals);
+    const qAlias = await this.__parseSelectReturn(qResult);
     return qAlias;
   }
 
   /**
    * Return back the first row, null if no rows
    *
-   * @param {*} dbConn
    * @param {*} sql
    * @param {*} params
    */
-  async select1 (dbConn, sql, params) {
-    const qAlias = await this.select(dbConn, sql, params);
+  async select1 (sql, params) {
+    const qAlias = await this.select(sql, params);
     return (qAlias.length > 0) ? qAlias[0] : null;
   }
 
   // ---------------------------------------------------------
 
-  async insert (dbConn, table, tableData) {
-    const tableDef = await this.__getTableMetadata(dbConn, table);
+  async insert (table, tableData) {
+    const tableDef = await this.__getTableMetadata(table);
     const insertData = this._checkData(tableDef, table, tableData);
 
     // check for required fields
@@ -101,12 +99,12 @@ module.exports = class sqlBaseAbstract {
     }
 
     this.lastStmt = this.__sqlInsert(tableDef, table, insertData);
-    const qResult = await this.queryStmt(dbConn);
+    const qResult = await this.queryStmt();
     return this.__parseInsertReturn(tableDef, qResult);
   }
 
-  async update (dbConn, table, tableData) {
-    const tableDef = await this.__getTableMetadata(dbConn, table);
+  async update (table, tableData) {
+    const tableDef = await this.__getTableMetadata(table);
     const updateData = this._checkData(tableDef, table, tableData);
 
     // check for a primary key
@@ -122,7 +120,7 @@ module.exports = class sqlBaseAbstract {
     }
 
     this.lastStmt = this.__sqlUpdate(tableDef, table, updateData);
-    const qResult = await this.queryStmt(dbConn);
+    const qResult = await this.queryStmt();
     return this.__parseUpdateReturn(tableDef, qResult);
   }
 
@@ -134,7 +132,7 @@ module.exports = class sqlBaseAbstract {
     return qResult;
   }
 
-  async __parseSelectReturn (dbConn, qResult) {
+  async __parseSelectReturn (qResult) {
     return qResult;
   }
 
@@ -146,7 +144,7 @@ module.exports = class sqlBaseAbstract {
     throw new Error('not supported');
   }
 
-  async __getTableMetadata (dbConn, table) {
+  async __getTableMetadata (table) {
     throw new Error('not implemented');
   }
 

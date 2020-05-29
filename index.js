@@ -4,12 +4,12 @@ const check = new (require('./class/check'))();
 
 module.exports = {
 
-  mysql: function () {
-    return new (require('./class/SQLUtilsMysql'))(dbSession);
+  mysql: function (dbConn) {
+    return new (require('./class/SQLUtilsMysql'))(dbSession, dbConn);
   },
 
-  postgresql: function () {
-    return new (require('./class/SQLUtilsPostgresql'))(dbSession);
+  postgresql: function (dbConn) {
+    return new (require('./class/SQLUtilsPostgresql'))(dbSession, dbConn);
   },
 
   check: check,
