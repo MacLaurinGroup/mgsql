@@ -12,7 +12,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
    * @param {*} sql
    * @param {*} params
    */
-  async query (sql, params) {
+  async select (sql, params) {
     this.lastStmt = {
       sql: sql,
       vals: params
@@ -32,16 +32,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
       qResult = await this._remapRowsWithAlias(qResult);
     }
 
-    // clean up unused fields
-    delete qResult._parsers;
-    delete qResult._types;
-    delete qResult.parseRow;
-    delete qResult.oid;
-    delete qResult.RowCtor;
-    delete qResult.rowAsArray;
-    delete qResult.command;
-
-    return qResult;
+    return qResult.rows;
   }
 
   /**

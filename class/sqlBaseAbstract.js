@@ -25,12 +25,7 @@ module.exports = class sqlBaseAbstract {
 
   // ---------------------------------------------------------
 
-  /**
-   * Runs the query but does not translation
-   * @param {*} sql
-   * @param {*} params
-   */
-  async queryRaw (sql, params) {
+  async query (sql, params) {
     this.lastStmt = {
       sql: sql,
       vals: params
@@ -39,16 +34,6 @@ module.exports = class sqlBaseAbstract {
     if (this.logStat) {
       console.log(this.lastStmt);
     }
-
-    const qResult = await this.dbConn.query(this.lastStmt.sql, this.lastStmt.vals);
-    return qResult;
-  }
-
-  async query (sql, params) {
-    this.lastStmt = {
-      sql: sql,
-      vals: params
-    };
 
     const qResult = await this.dbConn.query(this.lastStmt.sql, this.lastStmt.vals);
     return qResult;
