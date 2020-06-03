@@ -282,7 +282,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
       return this.dbDefinition.getTableName(tableOwner, tableID);
     }
 
-    const qResult = await this.dbConn.query(SQL_TABLEID, [tableOwner, tableID]);
+    const qResult = await this.dbConn.query(SQL_TABLEID, [tableID]);
     if (qResult.rows.length === 1) {
       this.dbDefinition.setTableName(tableOwner, tableID, qResult.rows[0].tablename);
       return qResult.rows[0].tablename;
@@ -301,8 +301,7 @@ from
   pg_class as pc 
 where 
   pc.relname=pt.tablename 
-  and tableowner=$1
-  and oid=$2
+  and oid=$1
 `;
 
 const SQL_ENUM = `
