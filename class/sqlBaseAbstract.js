@@ -27,7 +27,7 @@ module.exports = class sqlBaseAbstract {
 
   async query (sql, params) {
     this.lastStmt = {
-      sql: sql,
+      sql: sql.trim(),
       vals: params
     };
 
@@ -82,7 +82,7 @@ module.exports = class sqlBaseAbstract {
 
     // check for required fields
     for (const col in tableDef.columns) {
-      if (!_.has(insertData, col) && !tableDef.columns[col].autoKeyGen && !tableDef.columns[col].hasDefault) {
+      if (!_.has(insertData, col) && tableDef.columns[col].bRequired) {
         throw new Error(`[-] Field=${col}; required column missing`);
       }
     }

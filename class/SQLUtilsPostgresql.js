@@ -14,7 +14,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
    */
   async select (sql, params) {
     this.lastStmt = {
-      sql: sql,
+      sql: sql.trim(),
       vals: params
     };
 
@@ -127,10 +127,10 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
   __parseInsertReturn (tableDef, qResult) {
     if (!_.has(qResult, 'rows') || qResult.rows.length === 0) {
       return qResult;
-    } else if (tableDef.keys.length > 0) {
-      for (let c = 0; c < qResult.fields.length; c++) {
-        if (qResult.fields[c].name === tableDef.keys[0]) {
-          return qResult.rows[0][c];
+    } else if (tableDef.keys.length > 0 && _.has(qResult, 'fields')) {
+      for (const field of qResult.fields) {
+        if (field.name === tableDef.keys[0]) {
+          return qResult.rows[0][field.name];
         }
       }
     }
@@ -174,11 +174,13 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
         values: null,
         keyType: null,
         hasDefault: (row.column_default != null),
+        bRequired: row.column_default == null && row.is_nullable === 'NO',
         len: (row.numeric_precision != null) ? (2 ** row.numeric_precision) : 0
       };
 
       if (row.identity_generation === 'ALWAYS') {
         field.autoKeyGen = true;
+        field.bRequired = false;
       }
 
       if (row.character_maximum_length != null) {
