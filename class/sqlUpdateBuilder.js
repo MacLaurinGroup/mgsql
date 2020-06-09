@@ -9,30 +9,30 @@ module.exports = class sqlUpdateBuilder {
     this.dbConn = dbConn;
 
     this.setvals = [];
-    this.where = [];
+    this.sqlWhere = [];
 
     this.values = [];
-    this.table = null;
+    this.sqlTable = null;
   }
 
   // ---------------------------------------------
 
   async run () {
-    const r = await this.dbConn.query(this.toSql(), this.values);
-    return r;
+    const qResult = await this.dbConn.query(this.toSql(), this.values);
+    return this.dbConn.__parseUpdateReturn(null, qResult);
   }
 
   // ---------------------------------------------
 
   table (table) {
-    this.table = table;
+    this.sqlTable = table;
     return this;
   }
 
   reset () {
     this.setvals = [];
     this.values = [];
-    this.where = [];
+    this.sqlWhere = [];
     return this;
   }
 
@@ -46,7 +46,7 @@ module.exports = class sqlUpdateBuilder {
   }
 
   where (column, value) {
-    this.where.push(column);
+    this.sqlWhere.push(column);
 
     if (typeof value !== 'undefined') {
       this.values.push(value);
@@ -55,13 +55,16 @@ module.exports = class sqlUpdateBuilder {
   }
 
   toSql () {
-    if (this.table == null) {
+    if (this.sqlTable == null) {
       throw new Error('[-] no table defined');
     }
     if (this.setvals.length === 0) {
       throw new Error('[-] No columns');
     }
-    const sql = `UPDATE ${this.table} SET ${this.setvals.join(',')} WHERE ${this.where.join(' AND ')}`;
+    if (this.sqlWhere.length === 0) {
+      throw new Error('[-] No where');
+    }
+    const sql = `UPDATE ${this.sqlTable} SET ${this.setvals.join(',')} WHERE ${this.sqlWhere.join(' AND ')}`;
     return sql;
   }
 };

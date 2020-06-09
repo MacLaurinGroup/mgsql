@@ -10,20 +10,21 @@ module.exports = class sqlInsertBuilder {
 
     this.columns = [];
     this.values = [];
-    this.table = null;
+    this.sqlTable = null;
   }
 
   // ---------------------------------------------
 
   async run (ignoreDuplicate) {
-    const r = await this.dbConn.query(this.toSql(ignoreDuplicate), this.values);
-    return r;
+    const tableDef = await this.dbConn.__getTableMetadata(this.sqlTable);
+    const qResult = await this.dbConn.query(this.toSql(ignoreDuplicate), this.values);
+    return this.dbConn.__parseInsertReturn(tableDef, qResult);
   }
 
   // ---------------------------------------------
 
   table (table) {
-    this.table = table;
+    this.sqlTable = table;
     return this;
   }
 
@@ -40,7 +41,7 @@ module.exports = class sqlInsertBuilder {
   }
 
   toSql (ignoreDuplicate) {
-    if (this.table == null) {
+    if (this.sqlTable == null) {
       throw new Error('[-] no table defined');
     }
     if (this.columns.length === 0) {
@@ -48,6 +49,6 @@ module.exports = class sqlInsertBuilder {
     }
 
     ignoreDuplicate = !!(ignoreDuplicate);
-    return this.dbConn.__createInsert(this.table, this.columns, ignoreDuplicate);
+    return this.dbConn.__createInsert(this.sqlTable, this.columns, ignoreDuplicate);
   }
 };

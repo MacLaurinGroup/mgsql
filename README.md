@@ -62,7 +62,7 @@ Supporting methods for re-use
   .reset()                      <- reset the columns/values
 
   .toSql(ignoreDuplicates)      <- returns the prepared SQL statement
-  async .run(ignoreDuplicates)  <- Return the count with the rows
+  async .run(ignoreDuplicates)  <- Return the ID if autogenerate
 ```
 
 
@@ -85,7 +85,7 @@ Supporting methods for re-use
   .reset()                      <- reset the columns/values
 
   .toSql(ignoreDuplicates)      <- returns the prepared SQL statement
-  async .run(ignoreDuplicates)  <- Return the count with the rows
+  async .run(ignoreDuplicates)  <- Return the number of rows updated
 ```
 
 
@@ -172,6 +172,9 @@ aliased name (```<table>.<column>```).
 
 Prepared paremeters are marked using ?
 
+## ToDo
+
+* MySQL side of the fence
 
 ## Release
 
