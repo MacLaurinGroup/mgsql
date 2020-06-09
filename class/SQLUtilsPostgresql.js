@@ -105,16 +105,10 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
   __sqlSelectWhere (where, values) {
     let indx = 0;
 
-    where = where.replace(/\?/gi, function (matched) {
+    return where.replace(/\?/gi, function (matched) {
       indx += 1;
       return '$' + indx;
     });
-
-    if (typeof values !== 'undefined' && values.length !== indx) {
-      throw new Error('[-] Prepared ? not equal to values');
-    }
-
-    return where;
   }
 
   __sqlSelectLimit (pageSize, page) {
