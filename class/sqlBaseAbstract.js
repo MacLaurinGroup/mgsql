@@ -20,6 +20,41 @@ module.exports = class sqlBaseAbstract {
     this.buildUpdatetObj = null;
   }
 
+  // ----------------------------------------
+
+  async run (builderObj) {
+    if (typeof builderObj === 'undefined') {
+      throw new Error('[-] Missing Builder');
+    } else if (builderObj === this.buildUpdatetObj || builderObj === this.buildInsertObj || builderObj === this.buildSelectObj) {
+      const r = await builderObj.run();
+      return r;
+    } else {
+      throw new Error('[-] Builder not presented');
+    }
+  }
+
+  async runWithCount (builderObj) {
+    if (typeof builderObj === 'undefined') {
+      throw new Error('[-] Missing Builder');
+    } else if (builderObj === this.buildSelectObj) {
+      const r = await builderObj.runWithCount();
+      return r;
+    } else {
+      throw new Error('[-] Builder not presented');
+    }
+  }
+
+  async runWithCountDistinct (builderObj) {
+    if (typeof builderObj === 'undefined') {
+      throw new Error('[-] Missing Builder');
+    } else if (builderObj === this.buildSelectObj) {
+      const r = await builderObj.runWithCount(true);
+      return r;
+    } else {
+      throw new Error('[-] Builder not presented');
+    }
+  }
+
   buildSelect () {
     if (this.buildSelectObj == null) {
       this.buildSelectObj = new SQLSelectBuilder(this);
@@ -40,6 +75,8 @@ module.exports = class sqlBaseAbstract {
     }
     return this.buildUpdatetObj;
   }
+
+  // ----------------------------------------
 
   log (_on) {
     this.logStat = (typeof _on !== 'undefined') ? _on : true;

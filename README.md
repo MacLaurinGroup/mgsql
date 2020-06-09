@@ -40,6 +40,11 @@ dbConn.update( 'schema1.table1', {} );   // return the rows updated
 // Logging the SQL/Values
 dbConn.log().update( 'schema1.table1', {} );   // return the rows updated
 dbConn.log(false).update( 'schema1.table1', {} );   // return the rows updated
+
+// Builder helpers
+dbConn.run( ..builder.. )
+dbConn.runWithCount( ..builder.. )
+dbConn.runWithCountDistinct( ..builder.. )
 ```
 
 
@@ -49,20 +54,24 @@ dbConn.log(false).update( 'schema1.table1', {} );   // return the rows updated
 const mgsql = require('mgsql');
 const dbConn = mgsql.postgresql( pgConnect );
 
-dbConn.buildInsert()
-  .table('global.table')
-  .column('a',2)
-  .column('b',3)
-  .column('c',3)
+await dbConn.run(
+  dbConn.buildInsert()
+    .table('global.table')
+    .column('a',2)
+    .column('b',3)
+    .column('c',3)
+    .ignoreDuplicate()
+  )
+)
 ```
 
 Supporting methods for re-use
 
 ```
-  .reset()                      <- reset the columns/values
+  .reset()      <- reset the columns/values; ignoreDuplicate flag
 
-  .toSql(ignoreDuplicates)      <- returns the prepared SQL statement
-  async .run(ignoreDuplicates)  <- Return the ID if autogenerate
+  .toSql()      <- returns the prepared SQL statement
+  async .run()  <- Return the ID if autogenerate
 ```
 
 
@@ -72,11 +81,14 @@ Supporting methods for re-use
 const mgsql = require('mgsql');
 const dbConn = mgsql.postgresql( pgConnect );
 
-dbConn.buildUpdate()
-  .table('global.table')
-  .setColumn('a=?',2)     <- value is optional
-  .setColumn('b=?',2)
-  .where('c=?',3)
+await dbConn.run(
+  dbConn.buildUpdate()
+    .table('global.table')
+    .setColumn('a=?',2)     <- value is optional
+    .setColumn('b=?',2)
+    .where('c=?',3)
+  )
+)
 ```
 
 Supporting methods for re-use
@@ -95,20 +107,23 @@ Supporting methods for re-use
 const mgsql = require('mgsql');
 const dbConn = mgsql.postgresql( pgConnect );
 
-dbConn.buildSelect()
-  .select('t1.col1, t2.col1')
-  .from('global.table1 as t1')
-  .from('global.table2 as t2')
-  .from({
-    "left" : "global.table3 as t3",
-    "right" : "global.table2 as tt2",
-    "where" : "t3.id = tt2.id"
-  })
-  .where('t1.id > ?', [3])
-  .whereOr('t2.id != 0')
-  .groupBy('')
-  .orderBy('t2.id asc)
-  .limit(10, 2)                           <- pageSize [, pageNo]
+await dbConn.run(
+  dbConn.buildSelect()
+    .select('t1.col1, t2.col1')
+    .from('global.table1 as t1')
+    .from('global.table2 as t2')
+    .from({
+      "left" : "global.table3 as t3",
+      "right" : "global.table2 as tt2",
+      "where" : "t3.id = tt2.id"
+    })
+    .where('t1.id > ?', [3])
+    .whereOr('t2.id != 0')
+    .groupBy('')
+    .orderBy('t2.id asc)
+    .limit(10, 2)                           <- pageSize [, pageNo]
+);
+
 ```
 
 Supporting methods for re-use
