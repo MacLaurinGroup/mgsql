@@ -4,6 +4,22 @@
  * (c) 2020 https://maclaurin.group/
  */
 module.exports = class SQLUtilsMysql extends require('./sqlBaseAbstract') {
+  __createInsert (table, columns, ignoreDuplicate) {
+    const preparedList = [];
+    for (let x = 0; x < columns.length; x++) {
+      preparedList.push('?');
+    }
+
+    let genSql;
+    if (ignoreDuplicate) {
+      genSql = `INSERT IGNORE INTO ${table} (${columns.join(',')}) VALUES (${preparedList.join(',')})`;
+    } else {
+      genSql = `INSERT INTO ${table} (${columns.join(',')}) VALUES (${preparedList.join(',')})`;
+    }
+
+    return genSql;
+  }
+
   /**
    * Load the table defintion if it is not already available
    *
@@ -59,5 +75,17 @@ module.exports = class SQLUtilsMysql extends require('./sqlBaseAbstract') {
       console.log(e);
       throw e;
     }
+  }
+
+  __sqlSelectLimit (pageSize, page) {
+    if (pageSize === -1) {
+      return '';
+    }
+
+    let s = 'LIMIT ' + pageSize;
+    if (page > 0) {
+      s += ', ' + (page * pageSize);
+    }
+    return s;
   }
 };

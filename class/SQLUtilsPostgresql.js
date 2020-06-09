@@ -8,13 +8,38 @@ const _ = require('underscore');
 
 module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
   /**
+   * Converts the ? ->  $1
+   * @param {*} sql
+   * @param {*} params
+   */
+  async query (sql, params) {
+    return super.query(this.__sqlSelectWhere(sql, params), params);
+  }
+
+  //  -------------------------------------
+
+  __createInsert (table, columns, ignoreDuplicate) {
+    const preparedList = [];
+    for (let x = 0; x < columns.length; x++) {
+      preparedList.push('?');
+    }
+
+    let genSql = `INSERT INTO ${table} (${columns.join(',')}) VALUES (${preparedList.join(',')})`;
+    if (ignoreDuplicate) {
+      genSql += ' on conflict do nothing';
+    }
+
+    return genSql;
+  }
+
+  /**
    * Specific override to let us alias up the columns
    * @param {*} sql
    * @param {*} params
    */
   async select (sql, params) {
     this.lastStmt = {
-      sql: sql.trim(),
+      sql: this.__sqlSelectWhere(sql, params),
       vals: params
     };
 
@@ -69,6 +94,39 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
 
     stmt.sql = `UPDATE ${table} SET ${sqlSet.join(',')} WHERE ${sqlWhere.join(',')}`;
     return stmt;
+  }
+
+  /**
+   * Takes the ? and turn them into $1, $2
+   *
+   * @param {*} where
+   * @param {*} values
+   */
+  __sqlSelectWhere (where, values) {
+    let indx = 0;
+
+    where = where.replace(/\?/gi, function (matched) {
+      indx += 1;
+      return '$' + indx;
+    });
+
+    if (typeof values !== 'undefined' && values.length !== indx) {
+      throw new Error('[-] Prepared ? not equal to values');
+    }
+
+    return where;
+  }
+
+  __sqlSelectLimit (pageSize, page) {
+    if (pageSize === -1) {
+      return '';
+    }
+
+    let s = 'LIMIT ' + pageSize;
+    if (page > 0) {
+      s += ' OFFSET ' + (page * pageSize);
+    }
+    return s;
   }
 
   /**

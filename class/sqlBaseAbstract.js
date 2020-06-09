@@ -5,6 +5,9 @@
  */
 
 const _ = require('underscore');
+const SQLSelectBuilder = require('./sqlSelectBuilder');
+const SQLInsertBuilder = require('./sqlInsertBuilder');
+const SQLUpdateBuilder = require('./sqlUpdateBuilder');
 
 module.exports = class sqlBaseAbstract {
   constructor (dbDefinition, dbConn) {
@@ -12,6 +15,30 @@ module.exports = class sqlBaseAbstract {
     this.dbConn = dbConn;
     this.lastStmt = null;
     this.logStat = false;
+    this.buildSelectObj = null;
+    this.buildInsertObj = null;
+    this.buildUpdatetObj = null;
+  }
+
+  buildSelect () {
+    if (this.buildSelectObj == null) {
+      this.buildSelectObj = new SQLSelectBuilder(this);
+    }
+    return this.buildSelectObj;
+  }
+
+  buildInsert () {
+    if (this.buildInsertObj == null) {
+      this.buildInsertObj = new SQLInsertBuilder(this);
+    }
+    return this.buildInsertObj;
+  }
+
+  buildUpdate () {
+    if (this.buildUpdatetObj == null) {
+      this.buildUpdatetObj = new SQLUpdateBuilder(this);
+    }
+    return this.buildUpdatetObj;
   }
 
   log (_on) {
@@ -26,6 +53,22 @@ module.exports = class sqlBaseAbstract {
   // ---------------------------------------------------------
 
   async query (sql, params) {
+    this.lastStmt = {
+      sql: sql.trim(),
+      vals: params
+    };
+
+    if (this.logStat) {
+      console.log(this.lastStmt);
+    }
+
+    const qResult = await this.dbConn.query(this.lastStmt.sql, this.lastStmt.vals);
+    return qResult;
+  }
+
+  // ---------------------------------------------------------
+
+  async queryR (sql, params) {
     this.lastStmt = {
       sql: sql.trim(),
       vals: params
@@ -92,6 +135,8 @@ module.exports = class sqlBaseAbstract {
     return this.__parseInsertReturn(tableDef, qResult);
   }
 
+  // ---------------------------------------------------------
+
   async update (table, tableData) {
     const tableDef = await this.__getTableMetadata(table);
     const updateData = this._checkData(tableDef, table, tableData);
@@ -111,6 +156,12 @@ module.exports = class sqlBaseAbstract {
     this.lastStmt = this.__sqlUpdate(tableDef, table, updateData);
     const qResult = await this.queryStmt();
     return this.__parseUpdateReturn(tableDef, qResult);
+  }
+
+  // ---------------------------------------------------------
+
+  createInsert (table, columns, ignoreDuplicate) {
+    throw new Error('[-] not implemented');
   }
 
   __parseInsertReturn (tableDef, qResult) {
@@ -136,6 +187,18 @@ module.exports = class sqlBaseAbstract {
   async __getTableMetadata (table) {
     throw new Error('not implemented');
   }
+
+  // ---------------------------------------------------------
+
+  __sqlSelectWhere (where, values) {
+    return where;
+  }
+
+  __sqlSelectLimit (pageSize, page) {
+    throw new Error('not implemented');
+  }
+
+  // ---------------------------------------------------------
 
   _checkData (tableDef, table, tableData) {
     const data = {};
