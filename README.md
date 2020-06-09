@@ -84,8 +84,8 @@ const dbConn = mgsql.postgresql( pgConnect );
 await dbConn.run(
   dbConn.buildUpdate()
     .table('global.table')
-    .setColumn('a=?',2)     <- value is optional
-    .setColumn('b=?',2)
+    .column('a=?',2)     <- value is optional
+    .column('b=?',2)
     .where('c=?',3)
   )
 )

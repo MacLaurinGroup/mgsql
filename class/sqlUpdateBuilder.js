@@ -36,7 +36,7 @@ module.exports = class sqlUpdateBuilder {
     return this;
   }
 
-  setColumn (column, value) {
+  column (column, value) {
     this.setvals.push(column);
 
     if (typeof value !== 'undefined') {
