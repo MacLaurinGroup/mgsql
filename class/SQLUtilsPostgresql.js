@@ -179,12 +179,14 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
   __parseInsertReturn (tableDef, qResult) {
     if (!_.has(qResult, 'rows') || qResult.rows.length === 0) {
       return qResult;
-    } else if (tableDef.keys.length > 0 && _.has(qResult, 'fields')) {
+    } else if (tableDef != null && tableDef.keys.length > 0 && _.has(qResult, 'fields')) {
       for (const field of qResult.fields) {
         if (field.name === tableDef.keys[0]) {
           return qResult.rows[0][field.name];
         }
       }
+    } else if (_.has(qResult, 'rows')) {
+      return qResult.rows;
     }
     return qResult;
   }

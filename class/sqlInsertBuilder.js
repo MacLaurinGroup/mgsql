@@ -17,9 +17,8 @@ module.exports = class sqlInsertBuilder {
   // ---------------------------------------------
 
   async run () {
-    const tableDef = await this.dbConn.__getTableMetadata(this.sqlTable);
     const qResult = await this.dbConn.query(this.toSql(), this.values);
-    return this.dbConn.__parseInsertReturn(tableDef, qResult);
+    return this.dbConn.__parseInsertReturn(null, qResult);
   }
 
   // ---------------------------------------------

@@ -71,7 +71,7 @@ Supporting methods for re-use
   .reset()      <- reset the columns/values; ignoreDuplicate flag
 
   .toSql()      <- returns the prepared SQL statement
-  async .run()  <- Return the ID if autogenerate
+  async .run()  <- Return the rows from the INSERT
 ```
 
 
