@@ -49,6 +49,21 @@ module.exports = class sqlSelectBuilder {
 
   // ---------------------------------------------
 
+  log (_on) {
+    this.dbConn.log(_on);
+    return this;
+  }
+
+  removeNull (_on) {
+    this.dbConn.removeNull(_on);
+    return this;
+  }
+
+  removeErrantPeriod (_on) {
+    this.dbConn.removeErrantPeriod(_on);
+    return this;
+  }
+
   whereReset () {
     this.sql.where = '';
     return this;
@@ -76,7 +91,22 @@ module.exports = class sqlSelectBuilder {
   }
 
   select (s) {
-    this.sql.select = s.trim();
+    if (typeof s === 'undefined' || s.trim().length === 0) {
+      return this;
+    } else {
+      this.sql.select = s.trim();
+      return this;
+    }
+  }
+
+  selectConcat (s) {
+    if (typeof s === 'undefined' || s.trim().length === 0) {
+      return this;
+    } else if (this.sql.select.endsWith(',')) {
+      this.sql.select += s.trim();
+    } else {
+      this.sql.select += ', ' + s.trim();
+    }
     return this;
   }
 
@@ -94,20 +124,30 @@ module.exports = class sqlSelectBuilder {
       this.tables[getTableName(o)] = true;
     } else {
       this.tables[getTableName(o.left)] = true;
-      this.tables[getTableName(o.right)] = true;
 
-      if (typeof o.join === 'undefined' || o.join === 'left') {
-        this.sql.from.push(`${o.left} LEFT JOIN ${o.right} ON ${o.where}`);
-      } else if (o.join.toLowerCase() === 'left outer') {
-        this.sql.from.push(`${o.left} LEFT OUTER JOIN ${o.right} ON ${o.where}`);
-      } else if (o.join.toLowerCase() === 'right') {
-        this.sql.from.push(`${o.left} RIGHT JOIN ${o.right} ON ${o.where}`);
-      } else if (o.join.toLowerCase() === 'right outer') {
-        this.sql.from.push(`${o.left} RIGHT OUTER JOIN ${o.right} ON ${o.where}`);
-      } else if (o.join.toLowerCase() === 'inner') {
-        this.sql.from.push(`${o.left} INNER JOIN ${o.right} ON ${o.where}`);
-      } else {
-        throw new Error('[-] JOIN TYPE not supported (left, left outer, right, right outer, inner)');
+      if (_.has(o, 'join') && Array.isArray(o.join)) {
+        const joinS = [o.left];
+
+        for (const jj of o.join) {
+          let joinType = 'LEFT JOIN';
+          if (_.has(jj, 'type')) {
+            if (jj.type.toLowerCase() === 'left outer') {
+              joinType = 'LEFT OUTER JOIN';
+            } else if (jj.type.toLowerCase() === 'right') {
+              joinType = 'RIGHT JOIN';
+            } else if (jj.type.toLowerCase() === 'right outer') {
+              joinType = 'RIGHT OUTER JOIN';
+            } else if (jj.type.toLowerCase() === 'inner') {
+              joinType = 'INNER JOIN';
+            } else {
+              throw new Error('[-] JOIN TYPE not supported (left, left outer, right, right outer, inner)');
+            }
+          }
+
+          joinS.push(`\r\n    ${joinType} ${jj.right} ON ${jj.where}`);
+          this.tables[getTableName(jj.right)] = true;
+        }
+        this.sql.from.push(joinS.join(''));
       }
     }
     return this;
@@ -222,7 +262,7 @@ module.exports = class sqlSelectBuilder {
 
   toSql () {
     const select = (this.sql.select === '') ? '*' : this.sql.select;
-    let genSql = `SELECT\r\n  ${select}\r\nFROM\r\n  ${this.sql.from.join(', ')}`.trim();
+    let genSql = `SELECT\r\n  ${select}\r\nFROM\r\n  ${this.sql.from.join(',\r\n  ')}`.trim();
 
     if (this.sql.where !== '') {
       genSql += `\r\nWHERE\r\n  ${this.sql.where}`;
@@ -249,7 +289,7 @@ module.exports = class sqlSelectBuilder {
 
   toCountSql (distinct) {
     distinct = (distinct) ? 'DISTINCT' : '';
-    let genSql = `SELECT\r\n ${distinct} count(*) as t\r\nFROM\r\n  ${this.sql.from.join(', ')}`.trim();
+    let genSql = `SELECT\r\n ${distinct} count(*) as t\r\nFROM\r\n  ${this.sql.from.join(',\r\n  ')}`.trim();
 
     if (this.sql.where !== '') {
       genSql += `\r\nWHERE\r\n  ${this.sql.where}`;

@@ -15,6 +15,8 @@ module.exports = class sqlBaseAbstract {
     this.dbConn = dbConn;
     this.lastStmt = null;
     this.logStat = false;
+    this.filterNull = false;
+    this.filterErantPeriod = false;
     this.buildSelectObj = null;
     this.buildInsertObj = null;
     this.buildUpdatetObj = null;
@@ -83,6 +85,16 @@ module.exports = class sqlBaseAbstract {
     return this;
   }
 
+  removeNull (_on) {
+    this.filterNull = (typeof _on !== 'undefined') ? _on : true;
+    return this;
+  }
+
+  removeErrantPeriod (_on) {
+    this.filterErantPeriod = (typeof _on !== 'undefined') ? _on : true;
+    return this;
+  }
+
   async end () {
     await this.dbConn.end();
   }
@@ -96,7 +108,7 @@ module.exports = class sqlBaseAbstract {
     };
 
     if (this.logStat) {
-      console.log(this.lastStmt);
+      console.log(`SQL________\r\n${this.lastStmt.sql}\r\n\r\nValues_____\r\n${this.lastStmt.vals}`);
     }
 
     const qResult = await this.dbConn.query(this.lastStmt.sql, this.lastStmt.vals);
@@ -112,7 +124,7 @@ module.exports = class sqlBaseAbstract {
     };
 
     if (this.logStat) {
-      console.log(this.lastStmt);
+      console.log(`SQL________\r\n${this.lastStmt.sql}\r\n\r\nValues_____\r\n${this.lastStmt.vals}`);
     }
 
     const qResult = await this.dbConn.query(this.lastStmt.sql, this.lastStmt.vals);
@@ -138,8 +150,9 @@ module.exports = class sqlBaseAbstract {
       vals: params
     };
 
+    console.log('-------------------------------------');
     const qResult = await this.query(this.lastStmt.sql, this.lastStmt.vals);
-    const qAlias = await this.__parseSelectReturn(qResult);
+    const qAlias = this.__parseSelectReturn(qResult);
     return qAlias;
   }
 
@@ -209,7 +222,7 @@ module.exports = class sqlBaseAbstract {
     return qResult;
   }
 
-  async __parseSelectReturn (qResult) {
+  __parseSelectReturn (qResult) {
     return qResult;
   }
 

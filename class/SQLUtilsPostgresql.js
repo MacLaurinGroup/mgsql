@@ -44,7 +44,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
     };
 
     if (this.logStat) {
-      console.log(this.lastStmt);
+      console.log(`SQL________\r\n${this.lastStmt.sql}\r\n\r\nValues_____\r\n${this.lastStmt.vals}`);
     }
 
     let qResult = await this.dbConn.query({
@@ -55,9 +55,10 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
 
     if (qResult.command && qResult.command === 'SELECT') {
       qResult = await this._remapRowsWithAlias(qResult);
+      return this.__parseSelectReturn(qResult);
+    } else {
+      return qResult.rows;
     }
-
-    return qResult.rows;
   }
 
   /**
@@ -157,8 +158,27 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
    *
    * @param {*} qResult
    */
-  async __parseSelectReturn (qResult) {
-    return _.has(qResult, 'rows') ? qResult.rows : [];
+  __parseSelectReturn (qResult) {
+    if (_.has(qResult, 'rows')) {
+      if (this.filterNull || this.filterErantPeriod) {
+        for (const row of qResult.rows) {
+          for (const col in row) {
+            if (this.filterNull && row[col] == null) {
+              delete row[col];
+              continue;
+            }
+
+            if (this.filterErantPeriod && col.charAt(0) === '.') {
+              row[col.substring(1)] = row[col];
+              delete row[col];
+            }
+          }
+        }
+      }
+      return qResult.rows;
+    } else {
+      return [];
+    }
   }
 
   /**

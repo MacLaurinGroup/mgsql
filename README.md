@@ -41,6 +41,10 @@ dbConn.update( 'schema1.table1', {} );   // return the rows updated
 dbConn.log().update( 'schema1.table1', {} );   // return the rows updated
 dbConn.log(false).update( 'schema1.table1', {} );   // return the rows updated
 
+dbConn.removeNull(true|false);    // Remove any keys that are null
+dbConn.removeErrantPeriod();      // Remove the period on any keys that start with .
+
+
 // Builder helpers
 dbConn.run( ..builder.. )
 dbConn.runWithCount( ..builder.. )
@@ -109,13 +113,22 @@ const dbConn = mgsql.postgresql( pgConnect );
 
 await dbConn.run(
   dbConn.buildSelect()
+    .log()
+    .removeNull()
+    .removeErrantPeriod()
     .select('t1.col1, t2.col1')
+    .selectConcat('t3.col2)
     .from('global.table1 as t1')
     .from('global.table2 as t2')
     .from({
       "left" : "global.table3 as t3",
-      "right" : "global.table2 as tt2",
-      "where" : "t3.id = tt2.id"
+      "join" : [
+        {
+        "type" : "left",                    <- left (default), left outer, right, right outer, inner
+        "right" : "global.table2 as tt2",
+        "where" : "t3.id = tt2.id"
+        }
+      ]
     })
     .where('t1.id > ?', [3])
     .whereOr('t2.id != 0')
@@ -138,6 +151,10 @@ Supporting methods for re-use
 
   .toSql()                  <- returns the prepared SQL statement
   .toCountSql(distinct)     <- Run a count (with optional distinct)
+  .log()                    <- Log the SQL to the console
+  .removeNull()             <- Remove any keys that are null
+  .removeErrantPeriod()     <- Remove the period on any keys that start with .
+
 
   async .run()      <- Return the count with the rows
 ```
@@ -178,7 +195,7 @@ where query is of the following structure
 }
 ```
 
-For columns that have a . (period) in them, to maintain that, datatables wants them escaped.  So in the JS defintion, "t1.id" is defined "t1\\.id"
+For columns that have a . (period) in them, to maintain that, datatables wants them escaped.  So in the JS defintion, "t1.id" is defined "t1\\\\.id"
 
 ## Postgres
 
@@ -193,6 +210,9 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2020-06-10:
+  * added .log() / .removeNull() / .removeErrantPeriod() to builders
+  * fixed the join syntax
 * 2020-06-09:
   * SELECT/INSERT/UPDATE Builder helpers
   * Auto ? -> $1

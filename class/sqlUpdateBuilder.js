@@ -24,6 +24,21 @@ module.exports = class sqlUpdateBuilder {
 
   // ---------------------------------------------
 
+  log (_on) {
+    this.dbConn.log(_on);
+    return this;
+  }
+
+  removeNull (_on) {
+    this.dbConn.removeNull(_on);
+    return this;
+  }
+
+  removeErrantPeriod (_on) {
+    this.dbConn.removeErrantPeriod(_on);
+    return this;
+  }
+
   table (table) {
     this.sqlTable = table;
     return this;
