@@ -17,6 +17,7 @@ module.exports = class sqlBaseAbstract {
     this.logStat = false;
     this.filterNull = false;
     this.filterErantPeriod = false;
+    this.filterKeys = null;
     this.buildSelectObj = null;
     this.buildInsertObj = null;
     this.buildUpdatetObj = null;
@@ -85,6 +86,23 @@ module.exports = class sqlBaseAbstract {
     return this;
   }
 
+  removeKeys (fields) {
+    this.filterKeys = {};
+
+    if (_.isArray(fields)) {
+      for (const el of fields) {
+        this.filterKeys[el.trim()] = true;
+      }
+    } else {
+      const fieldArr = fields.split(',');
+      for (let x = 0; x < fieldArr.length; x++) {
+        this.filterKeys[fieldArr[x].trim()] = true;
+      }
+    }
+
+    return this;
+  }
+
   removeNull (_on) {
     this.filterNull = (typeof _on !== 'undefined') ? _on : true;
     return this;
@@ -150,7 +168,6 @@ module.exports = class sqlBaseAbstract {
       vals: params
     };
 
-    console.log('-------------------------------------');
     const qResult = await this.query(this.lastStmt.sql, this.lastStmt.vals);
     const qAlias = this.__parseSelectReturn(qResult);
     return qAlias;

@@ -59,6 +59,11 @@ module.exports = class sqlSelectBuilder {
     return this;
   }
 
+  removeKeys (_keys) {
+    this.dbConn.removeKeys(_keys);
+    return this;
+  }
+
   removeErrantPeriod (_on) {
     this.dbConn.removeErrantPeriod(_on);
     return this;

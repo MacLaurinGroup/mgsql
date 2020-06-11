@@ -160,10 +160,13 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
    */
   __parseSelectReturn (qResult) {
     if (_.has(qResult, 'rows')) {
-      if (this.filterNull || this.filterErantPeriod) {
+      if (this.filterNull || this.filterErantPeriod || this.filterKeys != null) {
         for (const row of qResult.rows) {
           for (const col in row) {
             if (this.filterNull && row[col] == null) {
+              delete row[col];
+              continue;
+            } else if (this.filterKeys[col]) {
               delete row[col];
               continue;
             }

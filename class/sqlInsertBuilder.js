@@ -56,7 +56,7 @@ module.exports = class sqlInsertBuilder {
     }
 
     this.columns.push(column);
-    this.values.concat(value);
+    this.values.push(value);
     return this;
   }
 

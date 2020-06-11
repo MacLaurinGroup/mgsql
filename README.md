@@ -168,7 +168,7 @@ Supporting methods for re-use
   .log()                    <- Log the SQL to the console
   .removeNull()             <- Remove any keys that are null
   .removeErrantPeriod()     <- Remove the period on any keys that start with .
-
+  .removeKeys(..)           <- Remove the keys from the result payload
 
   async .run()      <- Return the count with the rows
 ```
