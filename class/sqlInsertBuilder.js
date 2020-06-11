@@ -51,8 +51,12 @@ module.exports = class sqlInsertBuilder {
   }
 
   column (column, value) {
+    if (typeof value === 'undefined') {
+      throw new Error('[-] Missing value');
+    }
+
     this.columns.push(column);
-    this.values.push(value);
+    this.values.concat(value);
     return this;
   }
 

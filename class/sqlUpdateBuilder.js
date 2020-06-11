@@ -55,7 +55,7 @@ module.exports = class sqlUpdateBuilder {
     this.setvals.push(column);
 
     if (typeof value !== 'undefined') {
-      this.values.push(value);
+      this.values.concat(value);
     }
     return this;
   }
@@ -64,7 +64,7 @@ module.exports = class sqlUpdateBuilder {
     this.sqlWhere.push(column);
 
     if (typeof value !== 'undefined') {
-      this.values.push(value);
+      this.values.concat(value);
     }
     return this;
   }

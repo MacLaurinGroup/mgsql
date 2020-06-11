@@ -12,6 +12,6 @@ module.exports = {
     return new (require('./class/SQLUtilsPostgresql'))(dbSession, dbConn);
   },
 
-  check: check,
+  assert: check,
   clean: clean
 };

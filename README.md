@@ -1,6 +1,7 @@
 # mgsql
 
-Set of SQL utilities for managing and building SQL statements for both Postgresql and MySQL
+A simple set of SQL utilities for managing and building SQL statements for both Postgresql and MySQL, trying to normalize
+as much of the differences as possible.
 
 
 ## API
@@ -11,9 +12,10 @@ const mgsql = require('mgsql');
 const dbConn = mgsql.mysql( mysqlConnect );
 
 // Throw an error if any of the fields match
-mgsql.check.forMissing( data, 'field1,field2' );
-mgsql.check.forEmptyOrNull( data, 'field1,field2' );
-mgsql.check.forEmptyOrNullOrMissing( data, 'field1,field2' );
+mgsql.assert.forMissing( data, 'field1,field2' );
+mgsql.assert.forMissing( data, ['field1','field2'] );          <-- accepts array-of-strings, or csv of strings
+mgsql.assert.forEmptyOrNull( data, 'field1,field2' );
+mgsql.assert.forEmptyOrNullOrMissing( data, 'field1,field2' );
 
 // Change the data for the given method signature
 mgsql.clean.forOnlyAZaz09( data, 'field1,field2' );
@@ -34,12 +36,14 @@ dbConn.select1( 'SELECT * FROM TABLE', [] );  // return struct or null
 // INSERT
 dbConn.insert( 'schema1.table1', {} );   // return the ID
 
-// INSERT
+// UPDATE
 dbConn.update( 'schema1.table1', {} );   // return the rows updated
 
 // Logging the SQL/Values
-dbConn.log().update( 'schema1.table1', {} );   // return the rows updated
-dbConn.log(false).update( 'schema1.table1', {} );   // return the rows updated
+dbConn.log();
+dbConn.update( 'schema1.table1', {} );   // return the rows updated
+dbConn.log(false);
+dbConn.update( 'schema1.table1', {} );   // return the rows updated
 
 dbConn.removeNull(true|false);    // Remove any keys that are null
 dbConn.removeErrantPeriod();      // Remove the period on any keys that start with .
@@ -50,6 +54,16 @@ dbConn.run( ..builder.. )
 dbConn.runWithCount( ..builder.. )
 dbConn.runWithCountDistinct( ..builder.. )
 ```
+
+## .insert() / .update()
+
+These are special methods as they will do a schema lookup on the database for the given table and do checking to make sure
+you have all the right columns, with the right data types and have not missed any required fields.  The database table
+definition drives the validation check here.
+
+This metadata is cached so the overhead is not incurred on each one.  A 'nice' error message is returned detailing the column
+that is wrong and the reason it failed.  It will auto marshall date objects.
+
 
 
 ## Builder INSERT
