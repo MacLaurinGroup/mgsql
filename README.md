@@ -176,8 +176,8 @@ Supporting methods for re-use
 There is support for the popular JavaScript DataTables control, with the query block it generates and passes to the server.
 
 ```
-        .dataTable(query)
-  async .runWithCount(distinct)   <- Return the count with the rows
+        .dataTable(query [, maxItems])    <- Optional maxItems to limit the total rows no matter the query.length
+  async .runWithCount(distinct)           <- Return the count with the rows
 ```
 
 where query is of the following structure

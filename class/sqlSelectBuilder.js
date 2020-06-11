@@ -191,9 +191,8 @@ module.exports = class sqlSelectBuilder {
 
   /**
    * Support for building from dataTables.net
-   *
    */
-  dataTable (query) {
+  dataTable (query, maxItems) {
     if (typeof query === 'undefined') {
       return;
     }
@@ -201,7 +200,15 @@ module.exports = class sqlSelectBuilder {
     // Manage the paging
     if (_.has(query, 'start') && _.has(query, 'length')) {
       query.start = Number(query.start);
+      query.start = (query.start < 0) ? 0 : query.start;
+
       query.length = Number(query.length);
+      query.length = (query.length < 0) ? 0 : query.length;
+
+      if (typeof maxItems !== 'undefined' && Number(maxItems) > query.length) {
+        query.length = Number(maxItems);
+      }
+
       this.limit(query.length, query.start / query.length);
     }
 
@@ -246,7 +253,7 @@ module.exports = class sqlSelectBuilder {
 
       for (let x = 0; x < query.order.length; x++) {
         const colOrderIndex = Number(query.order[x].column);
-        if (_.has(query.columns[colOrderIndex], 'orderable') && query.columns[colOrderIndex].orderable === 'true') {
+        if (colOrderIndex >= 0 && _.has(query.columns[colOrderIndex], 'orderable') && query.columns[colOrderIndex].orderable === 'true') {
           const colOrderName = getColumnName(query.columns[colOrderIndex]);
           orderByStmt.push(`${colOrderName} ${(query.order[x].dir === 'asc') ? 'asc' : 'desc'}`);
         }
