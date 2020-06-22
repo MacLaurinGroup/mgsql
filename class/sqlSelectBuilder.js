@@ -219,7 +219,7 @@ module.exports = class sqlSelectBuilder {
 
     // equals (only for 3 or more)
     if (_.has(query, 'equals')) {
-      for (const colName of query.equals) {
+      for (const colName in query.equals) {
         this.whereStmt(`${colName}=?`, query.equals[colName]);
       }
     }
