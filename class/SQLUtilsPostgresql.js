@@ -166,12 +166,10 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
             if (this.filterNull && row[col] == null) {
               delete row[col];
               continue;
-            } else if (this.filterKeys[col]) {
+            } else if (this.filterKeys && this.filterKeys[col]) {
               delete row[col];
               continue;
-            }
-
-            if (this.filterErantPeriod && col.charAt(0) === '.') {
+            } else if (this.filterErantPeriod && col.charAt(0) === '.') {
               row[col.substring(1)] = row[col];
               delete row[col];
             }
