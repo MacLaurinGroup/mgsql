@@ -316,7 +316,9 @@ module.exports = class sqlBaseAbstract {
           }
         }
       } else if (fieldDef.dataType === 'boolean') {
-        if (tableData[col] === true || tableData[col] === 1 || tableData[col].toLowerCase().startsWith('y') || tableData[col].toLowerCase().startsWith('t')) {
+        if (tableData[col] === true || tableData[col] === 1) {
+          data[colName] = true;
+        } else if (_.isString(tableData[col]) && (tableData[col].toLowerCase().startsWith('y') || tableData[col].toLowerCase().startsWith('t'))) {
           data[colName] = true;
         } else {
           data[colName] = false;
