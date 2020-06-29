@@ -9,7 +9,9 @@ const _ = require('underscore');
 module.exports = class sqlSelectBuilder {
   constructor (dbConn) {
     this.dbConn = dbConn;
+  }
 
+  resetAll () {
     this.sql = {
       select: '',
       from: [],
@@ -21,6 +23,7 @@ module.exports = class sqlSelectBuilder {
     this.pageSize = -1;
     this.values = [];
     this.tables = {};
+    return this;
   }
 
   // ---------------------------------------------

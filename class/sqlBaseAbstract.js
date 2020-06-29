@@ -62,21 +62,21 @@ module.exports = class sqlBaseAbstract {
     if (this.buildSelectObj == null) {
       this.buildSelectObj = new SQLSelectBuilder(this);
     }
-    return this.buildSelectObj;
+    return this.buildSelectObj.resetAll();
   }
 
   buildInsert () {
     if (this.buildInsertObj == null) {
       this.buildInsertObj = new SQLInsertBuilder(this);
     }
-    return this.buildInsertObj;
+    return this.buildInsertObj.resetAll();
   }
 
   buildUpdate () {
     if (this.buildUpdatetObj == null) {
       this.buildUpdatetObj = new SQLUpdateBuilder(this);
     }
-    return this.buildUpdatetObj;
+    return this.buildUpdatetObj.resetAll();
   }
 
   // ----------------------------------------

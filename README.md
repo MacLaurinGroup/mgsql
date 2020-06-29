@@ -224,6 +224,8 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2020-06-29:
+  * added resetAll() on builder patterns
 * 2020-06-10:
   * added .log() / .removeNull() / .removeErrantPeriod() to builders
   * fixed the join syntax

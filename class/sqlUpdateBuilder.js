@@ -7,12 +7,15 @@
 module.exports = class sqlUpdateBuilder {
   constructor (dbConn) {
     this.dbConn = dbConn;
+  }
 
+  resetAll () {
     this.setvals = [];
     this.sqlWhere = [];
 
     this.values = [];
     this.sqlTable = null;
+    return this;
   }
 
   // ---------------------------------------------

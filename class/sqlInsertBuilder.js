@@ -7,11 +7,14 @@
 module.exports = class sqlInsertBuilder {
   constructor (dbConn) {
     this.dbConn = dbConn;
+  }
 
+  resetAll () {
     this.columns = [];
     this.values = [];
     this.sqlTable = null;
     this.ignoreDuplicate = false;
+    return this;
   }
 
   // ---------------------------------------------
