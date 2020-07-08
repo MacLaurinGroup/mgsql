@@ -220,10 +220,19 @@ module.exports = class sqlSelectBuilder {
       this.limit(query.length, query.start / query.length);
     }
 
-    // equals (only for 3 or more)
+    // equals
     if (_.has(query, 'equals')) {
       for (const colName in query.equals) {
         this.where(`${colName}=?`, query.equals[colName]);
+      }
+    }
+
+    // range
+    if (_.has(query, 'range')) {
+      for (const colName in query.range) {
+        if (_.has(query.range[colName], 'f') && _.has(query.range[colName], 't')) {
+          this.where(`${colName} >= ? AND ${colName} <= ?`, [query.range[colName].f, query.range[colName].t]);
+        }
       }
     }
 
@@ -244,7 +253,7 @@ module.exports = class sqlSelectBuilder {
       const whereVals = [];
 
       for (const column of query.columns) {
-        if (column.searchable === 'true' && !_.has(query.equals, getColumnName(column))) {
+        if ((column.searchable === 'true' || column.searchable === true) && !_.has(query.equals, getColumnName(column))) {
           whereStmt.push(`${getColumnName(column)} LIKE ?`);
           whereVals.push(`%${query.search.value}%`);
         }

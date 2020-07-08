@@ -205,6 +205,12 @@ where query is of the following structure
   },
   equals: {
     "columnName" : "value"  <- the value of the column to do a '=' 
+  },
+  range: {
+    "columnName" : {
+      "f": value   <- the value >=
+      "t": value   <- the value for <=
+    }  
   }
 }
 ```
@@ -224,6 +230,8 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2020-07-08:
+  * added .range to the dataTable support
 * 2020-06-29:
   * added resetAll() on builder patterns
 * 2020-06-10:
