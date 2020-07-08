@@ -1,6 +1,6 @@
 {
   "name": "mgsql",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "SQL Utility",
   "main": "index.js",
   "scripts": {

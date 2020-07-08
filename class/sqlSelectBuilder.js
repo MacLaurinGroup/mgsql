@@ -239,7 +239,7 @@ module.exports = class sqlSelectBuilder {
     // selectColumns
     if (_.has(query, 'selectColumns')) {
       this.select(query.selectColumns);
-    } else if (_.has(query, 'columns') && query.columns.length > 0) {
+    } else if (this.sql.select === '' && _.has(query, 'columns') && query.columns.length > 0) {
       const selectColumns = [];
       for (const column of query.columns) {
         selectColumns.push(getColumnName(column));
