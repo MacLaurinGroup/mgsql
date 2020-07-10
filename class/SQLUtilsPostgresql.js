@@ -130,8 +130,9 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
    * @param {*} tableDef
    * @param {*} table
    * @param {*} tableData
+   * @param {*} ignoreDuplicate
    */
-  __sqlInsert (tableDef, table, tableData) {
+  __sqlInsert (tableDef, table, tableData, ignoreDuplicate) {
     const stmt = {
       sql: null,
       vals: []
@@ -147,6 +148,9 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
     }
 
     stmt.sql = `INSERT INTO ${table} (${sqlCols.join(',')}) VALUES (${sqlVals.join(',')})`;
+    if (ignoreDuplicate) {
+      stmt.sql += ' ON CONFLICT DO NOTHING';
+    }
     if (tableDef.keys.length > 0) {
       stmt.sql += ` RETURNING ${tableDef.keys.join(',')}`;
     }
