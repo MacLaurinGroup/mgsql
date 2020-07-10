@@ -197,7 +197,25 @@ module.exports = class sqlBaseAbstract {
       }
     }
 
-    this.lastStmt = this.__sqlInsert(tableDef, table, insertData);
+    this.lastStmt = this.__sqlInsert(tableDef, table, insertData, false);
+    const qResult = await this.queryStmt();
+    return this.__parseInsertReturn(tableDef, qResult);
+  }
+
+  // ---------------------------------------------------------
+
+  async insertIgnoreDuplicate (table, tableData) {
+    const tableDef = await this.__getTableMetadata(table);
+    const insertData = this._checkData(tableDef, table, tableData);
+
+    // check for required fields
+    for (const col in tableDef.columns) {
+      if (!_.has(insertData, col) && tableDef.columns[col].bRequired) {
+        throw new Error(`[-] Field=${col}; required column missing`);
+      }
+    }
+
+    this.lastStmt = this.__sqlInsert(tableDef, table, insertData, true);
     const qResult = await this.queryStmt();
     return this.__parseInsertReturn(tableDef, qResult);
   }
@@ -243,7 +261,7 @@ module.exports = class sqlBaseAbstract {
     return qResult;
   }
 
-  __sqlInsert (tableDef, table, tableData) {
+  __sqlInsert (tableDef, table, tableData, ignoreDuplicate) {
     throw new Error('not supported');
   }
 
