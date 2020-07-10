@@ -35,6 +35,7 @@ dbConn.select1( 'SELECT * FROM TABLE', [] );  // return struct or null
 
 // INSERT
 dbConn.insert( 'schema1.table1', {} );   // return the ID
+dbConn.insertIgnoreDuplicate( 'schema1.table1', {} );   // return the ID
 
 // UPDATE
 dbConn.update( 'schema1.table1', {} );   // return the rows updated
@@ -230,6 +231,8 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2020-07-10:
+  * added .insertIgnoreDuplicate
 * 2020-07-08:
   * added .range to the dataTable support
 * 2020-06-29:
