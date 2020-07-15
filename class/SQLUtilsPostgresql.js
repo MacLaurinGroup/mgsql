@@ -257,7 +257,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
         len: (row.numeric_precision != null) ? (2 ** row.numeric_precision) : 0
       };
 
-      if (row.identity_generation === 'ALWAYS') {
+      if (row.identity_generation === 'ALWAYS' || row.identity_generation === 'BY DEFAULT') {
         field.autoKeyGen = true;
         field.bRequired = false;
       }
@@ -270,7 +270,6 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
     }
 
     await this._readKeys(schema, table, desc);
-
     return desc;
   }
 
