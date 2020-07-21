@@ -13,7 +13,7 @@ module.exports = class sqlInsertBuilder {
     this.columns = [];
     this.values = [];
     this.sqlTable = null;
-    this.ignoreDuplicate = false;
+    this._ignoreDuplicate = false;
     return this;
   }
 
@@ -49,7 +49,7 @@ module.exports = class sqlInsertBuilder {
   reset () {
     this.columns = [];
     this.values = [];
-    this.ignoreDuplicate = false;
+    this._ignoreDuplicate = false;
     return this;
   }
 
@@ -64,7 +64,7 @@ module.exports = class sqlInsertBuilder {
   }
 
   ignoreDuplicate () {
-    this.ignoreDuplicate = true;
+    this._ignoreDuplicate = true;
     return this;
   }
 
@@ -76,6 +76,6 @@ module.exports = class sqlInsertBuilder {
       throw new Error('[-] No columns');
     }
 
-    return this.dbConn.__createInsert(this.sqlTable, this.columns, this.ignoreDuplicate);
+    return this.dbConn.__createInsert(this.sqlTable, this.columns, this._ignoreDuplicate);
   }
 };
