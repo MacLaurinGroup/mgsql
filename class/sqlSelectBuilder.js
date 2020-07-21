@@ -215,7 +215,7 @@ module.exports = class sqlSelectBuilder {
       query.length = Number(query.length);
       query.length = (query.length < 0) ? 0 : query.length;
 
-      if (typeof maxItems !== 'undefined' && Number(maxItems) > query.length) {
+      if (typeof maxItems !== 'undefined' && Number(maxItems) < query.length) {
         query.length = Number(maxItems);
       }
 
