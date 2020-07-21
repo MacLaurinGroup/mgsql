@@ -45,6 +45,8 @@ module.exports = class sqlSelectBuilder {
       res.recordsTotal = Number(res.recordsTotal);
     }
 
+    res.page = this.page;
+    res.pageSize = this.pageSize;
     res.recordsFiltered = res.recordsTotal;
 
     return res;
@@ -218,6 +220,8 @@ module.exports = class sqlSelectBuilder {
       }
 
       this.limit(query.length, query.start / query.length);
+    } else {
+      this.limit(maxItems, 0);
     }
 
     // equals

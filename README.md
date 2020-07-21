@@ -231,6 +231,8 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2020-07-21:
+  * fixed dataTable maxItems
 * 2020-07-10:
   * added .insertIgnoreDuplicate
 * 2020-07-08:
