@@ -205,7 +205,10 @@ where query is of the following structure
     "value" : "value"       <- the value of the column to do a 'LIKE' against
   },
   equals: {
-    "columnName" : "value"  <- the value of the column to do a '=' 
+    "columnName" : "value"  <- the value of the column to do a '='; if an array, will be a IN
+  },
+  notequals: {
+    "columnName" : "value"  <- the value of the column to do a '!='; if an array, will be a NOT IN
   },
   range: {
     "columnName" : {
@@ -231,6 +234,8 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2020-07-29:
+  * Support for array, and notequals
 * 2020-07-21:
   * fixed dataTable maxItems
 * 2020-07-10:

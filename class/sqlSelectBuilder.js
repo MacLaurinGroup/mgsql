@@ -227,7 +227,29 @@ module.exports = class sqlSelectBuilder {
     // equals
     if (_.has(query, 'equals')) {
       for (const colName in query.equals) {
-        this.where(`${colName}=?`, query.equals[colName]);
+        if (Array.isArray(query.equals[colName])) {
+          const v = [];
+          for (const el of query.equals[colName]) {
+            v.push('?');
+          }
+          this.where(`${colName} IN (${v.join(',')})`, query.equals[colName]);
+        } else {
+          this.where(`${colName}=?`, query.equals[colName]);
+        }
+      }
+    }
+
+    if (_.has(query, 'notequals')) {
+      for (const colName in query.notequals) {
+        if (Array.isArray(query.notequals[colName])) {
+          const v = [];
+          for (const el of query.notequals[colName]) {
+            v.push('?');
+          }
+          this.where(`${colName} NOT IN (${v.join(',')})`, query.notequals[colName]);
+        } else {
+          this.where(`${colName}!=?`, query.notequals[colName]);
+        }
       }
     }
 
