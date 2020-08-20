@@ -234,6 +234,8 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2020-08-20:
+  * Updated clean filter to permit .,;-
 * 2020-07-29:
   * Support for array, and notequals
 * 2020-07-21:

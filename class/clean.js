@@ -21,7 +21,7 @@ module.exports = class clean {
     for (const field of fields) {
       if (_.has(data, field)) {
         data[field] = data[field].toString().trim();
-        data[field] = data[field].replace(/[^a-zA-Z0-9 ]/g, '');
+        data[field] = data[field].replace(/[^a-zA-Z0-9,.;\- ]/g, '');
       }
     }
     return this;
