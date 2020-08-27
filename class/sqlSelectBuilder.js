@@ -280,7 +280,7 @@ module.exports = class sqlSelectBuilder {
 
       for (const column of query.columns) {
         if ((column.searchable === 'true' || column.searchable === true) && !_.has(query.equals, getColumnName(column))) {
-          whereStmt.push(`${getColumnName(column)} LIKE ?`);
+          whereStmt.push(`${getColumnName(column)} ILIKE ?`);
           whereVals.push(`%${query.search.value}%`);
         }
       }
