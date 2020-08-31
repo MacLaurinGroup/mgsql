@@ -378,35 +378,28 @@ module.exports = class sqlBaseAbstract {
    * @param {*} column
    * @param {*} parts
    */
+  /**
+
+   * Creates a date object from the parts passed
+   * @param {*} column
+   * @param {*} parts
+   */
   _parseDate (column, parts) {
     if (parts.length !== 3) {
       throw new Error(`[-] Field=${column}; invalid date (yyyy-mm-dd)`);
     }
-
-    const thisDate = new Date();
-    thisDate.setHours(0);
-    thisDate.setMinutes(0);
-    thisDate.setSeconds(0);
-    thisDate.setMilliseconds(0);
-
-    let v = parts[0] * 1;
-    if (_.isNaN(v) || v < 0 || v > 2100) {
+    const year = parts[0] * 1;
+    if (_.isNaN(year) || year < 0 || year > 2100) {
       throw new Error(`[-] Field=${column}; invalid year ${parts[0]}`);
     }
-    thisDate.setFullYear(v);
-
-    v = parts[1] * 1;
-    if (_.isNaN(v) || v < 1 || v > 12) {
+    const month = parts[1] * 1;
+    if (_.isNaN(month) || month < 1 || month > 12) {
       throw new Error(`[-] Field=${column}; invalid month ${parts[1]}`);
     }
-    thisDate.setMonth(v - 1);
-
-    v = parts[2] * 1;
-    if (_.isNaN(v) || v < 0 || v > 31) {
+    const day = parts[2] * 1;
+    if (_.isNaN(day) || day < 0 || day > 31) {
       throw new Error(`[-] Field=${column}; invalid day ${parts[2]}`);
     }
-
-    thisDate.setDate(v);
-    return thisDate;
+    return new Date(year, month - 1, day, 0, 0, 0);
   }
 };

@@ -234,6 +234,8 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2020-08-31:
+  * fixed date parsing on invalid days in month
 * 2020-08-20:
   * Updated clean filter to permit .,;-
 * 2020-07-29:
