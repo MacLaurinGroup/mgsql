@@ -93,7 +93,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
       }
     }
 
-    stmt.sql = `UPDATE ${table} SET ${sqlSet.join(',')} WHERE ${sqlWhere.join(',')}`;
+    stmt.sql = `UPDATE ${table} SET ${sqlSet.join(',')} WHERE ${sqlWhere.join(' AND ')}`;
     return stmt;
   }
 

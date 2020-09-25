@@ -234,6 +234,8 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2020-09-25:
+  * fixed multiple key on UPDATE
 * 2020-08-31:
   * fixed date parsing on invalid days in month
 * 2020-08-20:
