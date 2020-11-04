@@ -234,6 +234,8 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2020-11-04:
+  * fixed null in clean
 * 2020-10-12:
   * updated clean to include more friendly characters
 * 2020-08-31:
