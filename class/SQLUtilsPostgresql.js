@@ -4,8 +4,6 @@
  * (c) 2020 https://maclaurin.group/
  */
 
-const _ = require('underscore');
-
 module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
   /**
    * Converts the ? ->  $1
@@ -79,7 +77,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
 
     // basic values
     for (const col in tableDef.columns) {
-      if (!tableDef.keys.includes(col) && _.has(tableData, col)) {
+      if (!tableDef.keys.includes(col) && col in tableData) {
         sqlSet.push(col + '=$' + (++pos));
         stmt.vals.push(tableData[col]);
       }
@@ -87,7 +85,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
 
     // basic values
     for (const col in tableDef.columns) {
-      if (tableDef.keys.includes(col) && _.has(tableData, col)) {
+      if (tableDef.keys.includes(col) && col in tableData) {
         sqlWhere.push(col + '=$' + (++pos));
         stmt.vals.push(tableData[col]);
       }
@@ -163,7 +161,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
    * @param {*} qResult
    */
   __parseSelectReturn (qResult) {
-    if (_.has(qResult, 'rows')) {
+    if ('rows' in qResult) {
       if (this.filterNull || this.filterErantPeriod || this.filterKeys != null) {
         for (const row of qResult.rows) {
           for (const col in row) {
@@ -193,7 +191,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
    * @param {*} qResult
    */
   __parseUpdateReturn (tableDef, qResult) {
-    return _.has(qResult, 'rowCount') ? qResult.rowCount : qResult;
+    return 'rowCount' in qResult ? qResult.rowCount : qResult;
   }
 
   /**
@@ -202,15 +200,15 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
    * @param {*} qResult
    */
   __parseInsertReturn (tableDef, qResult) {
-    if (!_.has(qResult, 'rows') || qResult.rows.length === 0) {
+    if (!('rows' in qResult) || qResult.rows.length === 0) {
       return qResult;
-    } else if (tableDef != null && tableDef.keys.length > 0 && _.has(qResult, 'fields')) {
+    } else if (tableDef != null && tableDef.keys.length > 0 && 'fields' in qResult) {
       for (const field of qResult.fields) {
         if (field.name === tableDef.keys[0]) {
           return qResult.rows[0][field.name];
         }
       }
-    } else if (_.has(qResult, 'rows')) {
+    } else if ('rows' in qResult) {
       return qResult.rows;
     }
     return qResult;
@@ -317,7 +315,7 @@ module.exports = class SQLUtilsPostgresql extends require('./sqlBaseAbstract') {
     const tableIdMap = {};
 
     for (const field of qResult.fields) {
-      if (field.tableID > 0 && !_.has(tableIdMap, field.tableID)) {
+      if (field.tableID > 0 && !(field.tableID in tableIdMap)) {
         tableIdMap[field.tableID] = await this._loadTableFromOid(tableOwner, field.tableID);
       }
     }

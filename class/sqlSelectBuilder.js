@@ -4,8 +4,6 @@
  * (c) 2020 https://maclaurin.group/
  */
 
-const _ = require('underscore');
-
 module.exports = class sqlSelectBuilder {
   constructor (dbConn) {
     this.dbConn = dbConn;
@@ -129,18 +127,18 @@ module.exports = class sqlSelectBuilder {
     }
    */
   from (o) {
-    if (_.isString(o)) {
+    if (typeof o === 'string') {
       this.sql.from.push(o);
       this.tables[getTableName(o)] = true;
     } else {
       this.tables[getTableName(o.left)] = true;
 
-      if (_.has(o, 'join') && Array.isArray(o.join)) {
+      if ('join' in o && Array.isArray(o.join)) {
         const joinS = [o.left];
 
         for (const jj of o.join) {
           let joinType = 'LEFT JOIN';
-          if (_.has(jj, 'type')) {
+          if ('type' in jj) {
             if (jj.type.toLowerCase() === 'left outer') {
               joinType = 'LEFT OUTER JOIN';
             } else if (jj.type.toLowerCase() === 'right') {
@@ -208,7 +206,7 @@ module.exports = class sqlSelectBuilder {
     }
 
     // Manage the paging
-    if (_.has(query, 'start') && _.has(query, 'length')) {
+    if ('start' in query && 'length' in query) {
       query.start = Number(query.start);
       query.start = (query.start < 0) ? 0 : query.start;
 
@@ -225,7 +223,7 @@ module.exports = class sqlSelectBuilder {
     }
 
     // equals
-    if (_.has(query, 'equals')) {
+    if ('equals' in query) {
       for (const colName in query.equals) {
         if (Array.isArray(query.equals[colName])) {
           const v = [];
@@ -239,7 +237,7 @@ module.exports = class sqlSelectBuilder {
       }
     }
 
-    if (_.has(query, 'notequals')) {
+    if ('notequals' in query) {
       for (const colName in query.notequals) {
         if (Array.isArray(query.notequals[colName])) {
           const v = [];
@@ -254,18 +252,18 @@ module.exports = class sqlSelectBuilder {
     }
 
     // range
-    if (_.has(query, 'range')) {
+    if ('range' in query) {
       for (const colName in query.range) {
-        if (_.has(query.range[colName], 'f') && _.has(query.range[colName], 't')) {
+        if ('f' in query.range[colName] && 't' in query.range[colName]) {
           this.where(`${colName} >= ? AND ${colName} <= ?`, [query.range[colName].f, query.range[colName].t]);
         }
       }
     }
 
     // selectColumns
-    if (_.has(query, 'selectColumns')) {
+    if ('selectColumns' in query) {
       this.select(query.selectColumns);
-    } else if (this.sql.select === '' && _.has(query, 'columns') && query.columns.length > 0) {
+    } else if (this.sql.select === '' && 'columns' in query && query.columns.length > 0) {
       const selectColumns = [];
       for (const column of query.columns) {
         selectColumns.push(getColumnName(column));
@@ -274,12 +272,12 @@ module.exports = class sqlSelectBuilder {
     }
 
     // search (only for 3 or more)
-    if (_.has(query, 'search') && _.has(query.search, 'value') && query.search.value.length > 2 && _.has(query, 'columns') && query.columns.length > 0) {
+    if ('search' in query && 'value' in query.search && query.search.value.length > 2 && 'columns' in query && query.columns.length > 0) {
       const whereStmt = [];
       const whereVals = [];
 
       for (const column of query.columns) {
-        if ((column.searchable === 'true' || column.searchable === true) && !_.has(query.equals, getColumnName(column))) {
+        if ((column.searchable === 'true' || column.searchable === true) && !(getColumnName(column) in query.equals)) {
           whereStmt.push(`${getColumnName(column)} ILIKE ?`);
           whereVals.push(`%${query.search.value}%`);
         }
@@ -291,12 +289,12 @@ module.exports = class sqlSelectBuilder {
     }
 
     // order
-    if (_.has(query, 'order') && query.order.length > 0 && _.has(query, 'columns') && query.columns.length > 0) {
+    if ('order' in query && query.order.length > 0 && 'columns' in query && query.columns.length > 0) {
       const orderByStmt = [];
 
       for (let x = 0; x < query.order.length; x++) {
         const colOrderIndex = Number(query.order[x].column);
-        if (colOrderIndex >= 0 && _.has(query.columns[colOrderIndex], 'orderable') && query.columns[colOrderIndex].orderable === 'true') {
+        if (colOrderIndex >= 0 && 'orderable' in query.columns[colOrderIndex] && query.columns[colOrderIndex].orderable === 'true') {
           const colOrderName = getColumnName(query.columns[colOrderIndex]);
           orderByStmt.push(`${colOrderName} ${(query.order[x].dir === 'asc') ? 'asc' : 'desc'}`);
         }
