@@ -1,6 +1,6 @@
 # mgsql
 
-A simple set of SQL utilities for managing and building SQL statements for both Postgresql and MySQL, trying to normalize
+A simple set of SQL utilities for managing and building SQL statements for both Postgresql, trying to normalize
 as much of the differences as possible.
 
 
@@ -9,7 +9,7 @@ as much of the differences as possible.
 ```
 const mgsql = require('mgsql');
 
-const dbConn = mgsql.mysql( mysqlConnect );
+const dbConn = mgsql.getPostgresWrap( pgConnect, 'schema1,schema2' );
 
 // Throw an error if any of the fields match
 mgsql.assert.forMissing( data, 'field1,field2' );
@@ -45,9 +45,6 @@ dbConn.log();
 dbConn.update( 'schema1.table1', {} );   // return the rows updated
 dbConn.log(false);
 dbConn.update( 'schema1.table1', {} );   // return the rows updated
-
-dbConn.removeNull(true|false);    // Remove any keys that are null
-dbConn.removeErrantPeriod();      // Remove the period on any keys that start with .
 
 
 // Builder helpers
@@ -149,7 +146,7 @@ await dbConn.run(
     .whereOr('t2.id != 0')
     .groupBy('')
     .orderBy('t2.id asc)
-    .limit(10, 2)                           <- pageSize [, pageNo]
+    .limit(10, 2)                           <- pageSize [, pageNo; 0 based page)]
 );
 
 ```
@@ -234,6 +231,9 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2020-12-16:
+  * Complete refactor
+  * Reduce the overhead of looking up metadata
 * 2020-11-04:
   * fixed null in clean
 * 2020-10-12:

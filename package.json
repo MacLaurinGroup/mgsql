@@ -1,6 +1,6 @@
 {
   "name": "mgsql",
-  "version": "0.1.31",
+  "version": "0.2.6",
   "description": "SQL Utility",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/MacLaurinGroup/mgsql#readme",
   "dependencies": {
-    "underscore": "^1.10.2"
+    
   },
   "devDependencies": {
     "pg": "^8.2.1"

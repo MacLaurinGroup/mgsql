@@ -1,52 +1,26 @@
-/**
- * Base for the SQLBuilder
- *
- * (c) 2020 https://maclaurin.group/
- */
-
-module.exports = class sqlInsertBuilder {
-  constructor (dbConn) {
-    this.dbConn = dbConn;
+module.exports = class SqlInsertBuilder extends require('./Builder') {
+  constructor (wrap) {
+    super(wrap);
+    this.reset();
   }
 
   resetAll () {
-    this.columns = [];
-    this.values = [];
-    this.sqlTable = null;
-    this._ignoreDuplicate = false;
+    this.reset();
     return this;
   }
 
   // ---------------------------------------------
 
   async run () {
-    const qResult = await this.dbConn.query(this.toSql(), this.values);
-    return this.dbConn.__parseInsertReturn(null, qResult);
+    const qResult = await this.wrap.query(this.toSql(), this.values);
+    const tableDef = this.wrap.getDefinition(this.schema, this.sqlTable);
+    return this.wrap.transformInsertReturn(tableDef, qResult);
   }
 
   // ---------------------------------------------
 
-  log (_on) {
-    this.dbConn.log(_on);
-    return this;
-  }
-
-  removeNull (_on) {
-    this.dbConn.removeNull(_on);
-    return this;
-  }
-
-  removeErrantPeriod (_on) {
-    this.dbConn.removeErrantPeriod(_on);
-    return this;
-  }
-
-  table (table) {
-    this.sqlTable = table;
-    return this;
-  }
-
   reset () {
+    super.reset();
     this.columns = [];
     this.values = [];
     this._ignoreDuplicate = false;
@@ -64,18 +38,30 @@ module.exports = class sqlInsertBuilder {
   }
 
   ignoreDuplicate () {
-    this._ignoreDuplicate = true;
+    this.ignoreDuplicate = true;
     return this;
   }
+
+  // ---------------------------------------------
 
   toSql () {
     if (this.sqlTable == null) {
       throw new Error('[-] no table defined');
-    }
-    if (this.columns.length === 0) {
+    } else if (this.columns.length === 0) {
       throw new Error('[-] No columns');
     }
 
-    return this.dbConn.__createInsert(this.sqlTable, this.columns, this._ignoreDuplicate);
+    const preparedList = [];
+    for (let x = 0; x < this.columns.length; x++) {
+      preparedList.push('?');
+    }
+
+    const tableDef = this.wrap.getDefinition(this.schema, this.sqlTable);
+
+    let genSql = `INSERT INTO ${this.schema}.${this.sqlTable} (${this.columns.join(',')}) VALUES (${preparedList.join(',')})`;
+    genSql += (this.ignoreDuplicate) ? ' ON CONFLICT DO NOTHING' : '';
+    genSql += (tableDef.keys.length > 0) ? ` RETURNING ${tableDef.keys.join(',')}` : '';
+
+    return genSql;
   }
 };

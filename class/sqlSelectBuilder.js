@@ -1,12 +1,7 @@
-/**
- * Base for the SQLBuilder
- *
- * (c) 2020 https://maclaurin.group/
- */
-
-module.exports = class sqlSelectBuilder {
-  constructor (dbConn) {
-    this.dbConn = dbConn;
+module.exports = class SqlSelectBuilder extends require('./Builder') {
+  constructor (wrap) {
+    super(wrap);
+    this.resetAll();
   }
 
   resetAll () {
@@ -21,20 +16,21 @@ module.exports = class sqlSelectBuilder {
     this.pageSize = -1;
     this.values = [];
     this.tables = {};
+    this.filterKeys = null;
     return this;
   }
 
   // ---------------------------------------------
 
   async run () {
-    const r = await this.dbConn.select(this.toSql(), this.values);
-    return r;
+    const r = await this.wrap.select(this.toSql(), this.values);
+    return transformSelectResult(r, this.filterNull, this.filterErantPeriod, this.filterKeys);
   }
 
-  async runWithCount (distinct) {
+  async runWithCount (distinct = false) {
     const res = {
-      data: await this.dbConn.select(this.toSql(), this.values),
-      recordsTotal: await this.dbConn.select1(this.toCountSql(distinct), this.values)
+      data: await this.run(),
+      recordsTotal: await this.wrap.select(this.toCountSql(distinct), this.values)
     };
 
     if (res.recordsTotal == null) {
@@ -52,23 +48,18 @@ module.exports = class sqlSelectBuilder {
 
   // ---------------------------------------------
 
-  log (_on) {
-    this.dbConn.log(_on);
-    return this;
-  }
-
-  removeNull (_on) {
-    this.dbConn.removeNull(_on);
-    return this;
-  }
-
-  removeKeys (_keys) {
-    this.dbConn.removeKeys(_keys);
-    return this;
-  }
-
-  removeErrantPeriod (_on) {
-    this.dbConn.removeErrantPeriod(_on);
+  removeKeys (fields) {
+    this.filterKeys = {};
+    if (Array.isArray(fields)) {
+      for (const el of fields) {
+        this.filterKeys[el.trim()] = true;
+      }
+    } else {
+      const fieldArr = fields.split(',');
+      for (let x = 0; x < fieldArr.length; x++) {
+        this.filterKeys[fieldArr[x].trim()] = true;
+      }
+    }
     return this;
   }
 
@@ -314,50 +305,47 @@ module.exports = class sqlSelectBuilder {
 
     if (this.sql.where !== '') {
       genSql += `\r\nWHERE\r\n  ${this.sql.where}`;
-      genSql = genSql.trim();
     }
     if (this.sql.groupby !== '') {
       genSql += `\r\n${this.sql.groupby}`;
-      genSql = genSql.trim();
     }
     if (this.sql.orderby !== '') {
       genSql += `\r\n${this.sql.orderby}`;
-      genSql = genSql.trim();
     }
     if (this.pageSize !== -1) {
-      genSql += `\r\n${this.dbConn.__sqlSelectLimit(this.pageSize, this.page)}`;
-      genSql = genSql.trim();
+      genSql += `\r\n${getLimit(this.pageSize, this.page)}`;
     }
 
     if (genSql.indexOf(';') > 0) {
       throw new Error('[-] Potential SQL Injection');
     }
-    return genSql;
+    return genSql.trim();
   }
 
-  toCountSql (distinct) {
+  toCountSql (distinct = false) {
     distinct = (distinct) ? 'DISTINCT' : '';
-    let genSql = `SELECT\r\n ${distinct} count(*) as t\r\nFROM\r\n  ${this.sql.from.join(',\r\n  ')}`.trim();
+    let genSql = `SELECT\r\n ${distinct} COUNT(*) as t\r\nFROM\r\n  ${this.sql.from.join(',\r\n  ')}`;
 
     if (this.sql.where !== '') {
       genSql += `\r\nWHERE\r\n  ${this.sql.where}`;
-      genSql = genSql.trim();
     }
+
     if (this.sql.groupby !== '') {
       genSql += `\r\n${this.sql.groupby}`;
-      genSql = genSql.trim();
     }
+
     if (genSql.indexOf(';') > 0) {
       throw new Error('[-] Potential SQL Injection');
     }
-    return genSql;
+
+    return genSql.trim();
   }
 };
 
 // ------------------------------------------------
 
 function getTableName (t) {
-  const c1 = t.toLowerCase().indexOf(' as ');
+  const c1 = t.toLowerCase().indexOf(' AS ');
   if (c1 > 0) {
     return t.substring(0, c1).trim();
   } else {
@@ -372,4 +360,38 @@ function getColumnName (column) {
   } else {
     return column.data;
   }
+}
+
+function getLimit (pageSize, page) {
+  if (pageSize === -1) {
+    return '';
+  }
+
+  let s = 'LIMIT ' + pageSize;
+  if (page > 0) {
+    s += ' OFFSET ' + (page * pageSize);
+  }
+  return s;
+}
+
+// ------------------------------
+
+function transformSelectResult (rows, filterNull = false, filterErantPeriod = false, filterKeys = null) {
+  if (filterNull || filterErantPeriod || filterKeys != null) {
+    for (const row of rows) {
+      for (const col in row) {
+        if (filterNull && row[col] == null) {
+          delete row[col];
+          continue;
+        } else if (filterKeys && col in filterKeys) {
+          delete row[col];
+          continue;
+        } else if (filterErantPeriod && col.charAt(0) === '.') {
+          row[col.substring(1)] = row[col];
+          delete row[col];
+        }
+      }
+    }
+  }
+  return rows;
 }

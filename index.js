@@ -1,15 +1,12 @@
-const dbSession = require('./class/Session');
 const clean = new (require('./class/clean'))();
 const check = new (require('./class/check'))();
 
 module.exports = {
 
-  mysql: function (dbConn) {
-    return new (require('./class/SQLUtilsMysql'))(dbSession, dbConn);
-  },
-
-  postgresql: function (dbConn) {
-    return new (require('./class/SQLUtilsPostgresql'))(dbSession, dbConn);
+  getPostgresWrap: async function (pgClient, schema) {
+    const w = new (require('./class/WrapPostgres'))(pgClient);
+    await w.init(schema);
+    return w;
   },
 
   assert: check,

@@ -3,14 +3,11 @@
  *
  * (c) 2020 https://maclaurin.group/
  */
-
-const _ = require('underscore');
-
 module.exports = class check {
   forMissing (data, fields) {
     fields = this._toArray(fields);
     for (const field of fields) {
-      if (!_.has(data, field)) {
+      if (!(field in data)) {
         throw new Error(field + ' was missing');
       }
     }
@@ -20,7 +17,7 @@ module.exports = class check {
   forEmptyOrNull (data, fields) {
     fields = this._toArray(fields);
     for (const field of fields) {
-      if (_.has(data, field) && (data[field] == null || data[field].toString().trim() === '')) {
+      if (field in data && (data[field] == null || data[field].toString().trim() === '')) {
         throw new Error(field + ' was empty');
       }
     }
@@ -30,7 +27,7 @@ module.exports = class check {
   forEmptyOrNullOrMissing (data, fields) {
     fields = this._toArray(fields);
     for (const field of fields) {
-      if (!_.has(data, field)) {
+      if (!(field in data)) {
         throw new Error(field + ' was missing');
       } else if (data[field] == null || data[field].toString().trim() === '') {
         throw new Error(field + ' was empty');
@@ -40,7 +37,7 @@ module.exports = class check {
   }
 
   _toArray (fields) {
-    if (_.isArray(fields)) {
+    if (Array.isArray(fields)) {
       return fields;
     } else {
       const fieldArr = fields.split(',');
