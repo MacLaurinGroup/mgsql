@@ -68,7 +68,7 @@ that is wrong and the reason it failed.  It will auto marshall date objects.
 
 ```
 const mgsql = require('mgsql');
-const dbConn = mgsql.postgresql( pgConnect );
+const dbConn = mgsql.getPostgresWrap( pgConnect, 'global' );
 
 await dbConn.run(
   dbConn.buildInsert()
@@ -95,7 +95,7 @@ Supporting methods for re-use
 
 ```
 const mgsql = require('mgsql');
-const dbConn = mgsql.postgresql( pgConnect );
+const dbConn = mgsql.getPostgresWrap( pgConnect, 'global' );
 
 await dbConn.run(
   dbConn.buildUpdate()
@@ -121,7 +121,7 @@ Supporting methods for re-use
 
 ```
 const mgsql = require('mgsql');
-const dbConn = mgsql.postgresql( pgConnect );
+const dbConn = mgsql.getPostgresWrap( pgConnect, 'global' );
 
 await dbConn.run(
   dbConn.buildSelect()
@@ -220,20 +220,16 @@ For columns that have a . (period) in them, to maintain that, datatables wants t
 
 ## Postgres
 
-Given the way Postgresql works with aliasing, this library, for all ```.select/.select1``` calls, will convert the columns return in the rows with a full
-aliased name (```<table>.<column>```).
+Given the way Postgresql works with aliasing, this library, for all ```.select/.select1``` calls, will convert the columns return in the rows with a full aliased name (```<table>.<column>```).
 
 Prepared paremeters are marked using ?
-
-## ToDo
-
-* MySQL side of the fence
 
 ## Release
 
 * 2020-12-16:
   * Complete refactor
   * Reduce the overhead of looking up metadata
+  * Dropped any thoughts of MySQL
 * 2020-11-04:
   * fixed null in clean
 * 2020-10-12:
