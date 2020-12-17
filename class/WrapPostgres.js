@@ -45,6 +45,13 @@ module.exports = class WrapPostgres extends require('./WrapBase') {
     return this;
   }
 
+  /**
+   * Free up memory for this OID if we are no longer using this
+   */
+  free () {
+    delete oidDef[this.pgClient.database];
+  }
+
   async end () {
     await this.pgClient.end();
   }
