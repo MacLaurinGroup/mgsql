@@ -35,7 +35,7 @@ dbConn.select1( 'SELECT * FROM TABLE', [] );  // return struct or null
 
 // INSERT
 dbConn.insert( 'schema1.table1', {} );   // return the ID
-dbConn.insertIgnoreDuplicate( 'schema1.table1', {} );   // return the ID
+dbConn.insertIgnoreDuplicate( 'schema1.table1', {} );   // return the ID; or null if no insert was made
 
 // UPDATE
 dbConn.update( 'schema1.table1', {} );   // return the rows updated

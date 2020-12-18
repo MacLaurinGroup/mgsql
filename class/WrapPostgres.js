@@ -24,13 +24,13 @@ module.exports = class WrapPostgres extends require('./WrapBase') {
         schemaDef[schema] = d;
       }
 
-      console.log(`mgsql.def.load(${this.pgClient.database}¬${schema})`);
+      console.log(`mgsql.def.load(${this.pgClient.database} ¬ ${schema})`);
     }
 
     if (!(this.pgClient.database in oidDef)) {
       oidDef[this.pgClient.database] = new (require('./OidLookup'))(schema);
       await oidDef[this.pgClient.database].load(this.pgClient);
-      console.log(`mgsql.oid.load(${this.pgClient.database}¬${schema})`);
+      console.log(`mgsql.oid.load(${this.pgClient.database} ¬ ${schema})`);
     }
   }
 
@@ -95,7 +95,7 @@ module.exports = class WrapPostgres extends require('./WrapBase') {
       const qResult = await this.pgClient.query(params);
       return qResult;
     } catch (e) {
-      const ne = new Error(e);
+      const ne = new Error(e.detail);
       ne.code = e.code;
       ne.lastStmt = this.lastStmt;
       throw ne;

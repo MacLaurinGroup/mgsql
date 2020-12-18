@@ -184,7 +184,7 @@ module.exports = class WrapBase {
 
   transformInsertReturn (tableDef, qResult) {
     if (!('rows' in qResult) || qResult.rows.length === 0) {
-      return qResult;
+      return null;
     } else if (tableDef != null && tableDef.keys.length > 0 && 'fields' in qResult) {
       for (const field of qResult.fields) {
         if (field.name === tableDef.keys[0]) {
