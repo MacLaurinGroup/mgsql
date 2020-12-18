@@ -95,7 +95,7 @@ module.exports = class WrapPostgres extends require('./WrapBase') {
       const qResult = await this.pgClient.query(params);
       return qResult;
     } catch (e) {
-      const ne = new Error(e.detail);
+      const ne = new Error(e.detail ? e.detail : e );
       ne.code = e.code;
       ne.lastStmt = this.lastStmt;
       throw ne;
