@@ -226,6 +226,8 @@ module.exports = class SqlSelectBuilder extends require('./Builder') {
           this.where(`${colName}=?`, query.equals[colName]);
         }
       }
+    } else {
+      query.equals = {};
     }
 
     if ('notequals' in query) {
@@ -240,6 +242,8 @@ module.exports = class SqlSelectBuilder extends require('./Builder') {
           this.where(`${colName}!=?`, query.notequals[colName]);
         }
       }
+    } else {
+      query.notequals = {};
     }
 
     // range
@@ -268,8 +272,10 @@ module.exports = class SqlSelectBuilder extends require('./Builder') {
       const whereVals = [];
 
       for (const column of query.columns) {
-        if ((column.searchable === 'true' || column.searchable === true) && !(getColumnName(column) in query.equals)) {
-          whereStmt.push(`${getColumnName(column)} ILIKE ?`);
+        const colName = getColumnName(column);
+
+        if ((column.searchable === 'true' || column.searchable === true) && !(colName in query.equals) && !(colName in query.notequals)) {
+          whereStmt.push(`${colName} ILIKE ?`);
           whereVals.push(`%${query.search.value}%`);
         }
       }
