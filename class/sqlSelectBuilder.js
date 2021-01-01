@@ -30,13 +30,13 @@ module.exports = class SqlSelectBuilder extends require('./Builder') {
   async runWithCount (distinct = false) {
     const res = {
       data: await this.run(),
-      recordsTotal: await this.wrap.select(this.toCountSql(distinct), this.values)
+      recordsTotal: await this.wrap.select1(this.toCountSql(distinct), this.values)
     };
 
     if (res.recordsTotal == null) {
       res.recordsTotal = 0;
     } else {
-      res.recordsTotal = Number(res.recordsTotal);
+      res.recordsTotal = Number(res.recordsTotal.t);
     }
 
     res.page = this.page;

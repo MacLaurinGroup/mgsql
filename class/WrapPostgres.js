@@ -95,7 +95,7 @@ module.exports = class WrapPostgres extends require('./WrapBase') {
       const qResult = await this.pgClient.query(params);
       return qResult;
     } catch (e) {
-      const ne = new Error(e.detail ? e.detail : e );
+      const ne = new Error(e.detail ? e.detail : e);
       ne.code = e.code;
       ne.lastStmt = this.lastStmt;
       throw ne;
@@ -251,18 +251,6 @@ function transformUpdateReturn (qResult) {
 
 function remapRowsWithAlias (database, qResult) {
   if (!(database in oidDef)) {
-    return qResult;
-  }
-
-  // Check to see if we have named fields
-  let nonFields = 0;
-  for (const field of qResult.fields) {
-    if (field.tableID === 0) {
-      nonFields++;
-    }
-  }
-
-  if (nonFields === qResult.fields.length) {
     return qResult;
   }
 
