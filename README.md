@@ -226,6 +226,8 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2021-01-19:
+  * Fixed orderable flag
 * 2020-12-16:
   * Complete refactor
   * Reduce the overhead of looking up metadata

@@ -291,7 +291,7 @@ module.exports = class SqlSelectBuilder extends require('./Builder') {
 
       for (let x = 0; x < query.order.length; x++) {
         const colOrderIndex = Number(query.order[x].column);
-        if (colOrderIndex >= 0 && 'orderable' in query.columns[colOrderIndex] && query.columns[colOrderIndex].orderable === 'true') {
+        if (colOrderIndex >= 0 && 'orderable' in query.columns[colOrderIndex] && (query.columns[colOrderIndex].orderable === 'true' || query.columns[colOrderIndex].orderable === true)) {
           const colOrderName = getColumnName(query.columns[colOrderIndex]);
           orderByStmt.push(`${colOrderName} ${(query.order[x].dir === 'asc') ? 'asc' : 'desc'}`);
         }
