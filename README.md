@@ -209,8 +209,14 @@ where query is of the following structure
   },
   range: {
     "columnName" : {
-      "f": value   <- the value >=
-      "t": value   <- the value for <=
+      "f": value   <- the value for '>=' [optional]
+      "t": value   <- the value for '<=' [optional]
+    }  
+  },
+  excrange: {
+    "columnName" : {
+      "f": value   <- the value for '>' [optional]
+      "t": value   <- the value for '<' [optional]
     }  
   }
 }
@@ -226,6 +232,8 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2021-02-09:
+  * Range is can be either or / added excrange
 * 2021-01-19:
   * Fixed orderable flag
 * 2020-12-16:

@@ -249,8 +249,23 @@ module.exports = class SqlSelectBuilder extends require('./Builder') {
     // range
     if ('range' in query) {
       for (const colName in query.range) {
-        if ('f' in query.range[colName] && 't' in query.range[colName]) {
-          this.where(`${colName} >= ? AND ${colName} <= ?`, [query.range[colName].f, query.range[colName].t]);
+        if ('f' in query.range[colName]) {
+          this.where(`${colName} >= ?`, [query.range[colName].f]);
+        }
+        if ('t' in query.range[colName]) {
+          this.where(`${colName} <= ?`, [query.range[colName].t]);
+        }
+      }
+    }
+
+    // exerange
+    if ('excrange' in query) {
+      for (const colName in query.excrange) {
+        if ('f' in query.excrange[colName]) {
+          this.where(`${colName} > ?`, [query.excrange[colName].f]);
+        }
+        if ('t' in query.excrange[colName]) {
+          this.where(`${colName} < ?`, [query.excrange[colName].t]);
         }
       }
     }
