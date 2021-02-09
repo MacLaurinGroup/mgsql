@@ -193,7 +193,7 @@ module.exports = class SqlSelectBuilder extends require('./Builder') {
    */
   dataTable (query, maxItems) {
     if (typeof query === 'undefined') {
-      return;
+      return this;
     }
 
     // Manage the paging
