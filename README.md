@@ -224,6 +224,20 @@ where query is of the following structure
 
 For columns that have a . (period) in them, to maintain that, datatables wants them escaped.  So in the JS defintion, "t1.id" is defined "t1\\\\.id"
 
+## .batch()
+
+You can pass in a file of statements, all to be executed, one after another.   Useful for setting up and tearing down tests.
+
+Each statement is treated as a Mustache template, and you can pass in replaces using the optional {}
+
+```
+.batch('./filename.sql', {
+  delimiter: '',  <-- Defaults to one-per-line; blank lines are ignore;  You can use something like --- to separate out in to blocks
+  'X' : 'x1'
+});
+```
+
+
 ## Postgres
 
 Given the way Postgresql works with aliasing, this library, for all ```.select/.select1``` calls, will convert the columns return in the rows with a full aliased name (```<table>.<column>```).
@@ -232,6 +246,8 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2021-04-05:
+  * Added .batch()
 * 2021-02-09:
   * Range is can be either or / added excrange
 * 2021-01-19:

@@ -36,6 +36,12 @@ module.exports = class WrapPostgres extends require('./WrapBase') {
 
   // ----------------------
 
+  async batch (filename, options) {
+    await require('./Batch').execute(this, filename, options);
+  }
+
+  // ----------------------
+
   getDefinition (schema, table) {
     return schemaDef[schema].getTable(schema, table);
   }
