@@ -159,7 +159,7 @@ module.exports = class WrapBase {
   parseDate (column, date) {
     date = (date.indexOf('T') !== -1) ? date.substring(0, date.indexOf('T')) : date;
 
-    const parts = date.replace('/', '-').split('-');
+    const parts = date.replaceAll('/', '-').split('-');
     if (parts.length !== 3) {
       throw new Error(`[-] Column=${column}; invalid date (yyyy-mm-dd)`);
     }
