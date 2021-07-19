@@ -246,6 +246,8 @@ Prepared paremeters are marked using ?
 
 ## Release
 
+* 2021-07-19:
+  * Logging update
 * 2021-05-13:
   * Fixed date parsing
 * 2021-04-05:

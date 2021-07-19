@@ -24,13 +24,18 @@ module.exports = class WrapPostgres extends require('./WrapBase') {
         schemaDef[schema] = d;
       }
 
-      console.log(`mgsql.def.load(${this.pgClient.database} ¬ ${schema})`);
+      if ( this.logStat ) {
+        console.log(`mgsql.def.load(${this.pgClient.database} ¬ ${schema})`);
+      }
     }
 
     if (!(this.pgClient.database in oidDef)) {
       oidDef[this.pgClient.database] = new (require('./OidLookup'))(schema);
       await oidDef[this.pgClient.database].load(this.pgClient);
-      console.log(`mgsql.oid.load(${this.pgClient.database} ¬ ${schema})`);
+
+      if ( this.logStat ) {
+        console.log(`mgsql.oid.load(${this.pgClient.database} ¬ ${schema})`);
+      }
     }
   }
 
@@ -55,7 +60,9 @@ module.exports = class WrapPostgres extends require('./WrapBase') {
    * Free up memory for this OID if we are no longer using this
    */
   free () {
-    console.log(`mgsql.oid.free(${this.pgClient.database})`);
+    if ( this.logStat ) {
+      console.log(`mgsql.oid.free(${this.pgClient.database})`);
+    }
     delete oidDef[this.pgClient.database];
   }
 
